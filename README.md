@@ -53,7 +53,7 @@ Code for the Period 6 Robot! This readme is subject to change.
 	
  [![](https://i.imgur.com/H5gyG10.png)](https://i.imgur.com/H5gyG10.png)
  
-10. If you see something like this, good job, the VEX plugin works! You can close the tab at the top.	
+10. If you see something like this, good job, the VEX plugin works! You can close the tab at the top. DO NOT CLICK SAVE.	
  
  [![](https://i.imgur.com/dixeple.png)](https://i.imgur.com/dixeple.png)
  
