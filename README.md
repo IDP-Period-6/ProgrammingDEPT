@@ -37,7 +37,7 @@ Here lies the code for the Period 6 Robot! This readme is subject to change.
 #### Installing GitHub Desktop and Making a Local Clone
 1.  Download GitHub desktop from [here](https://desktop.github.com/download/ "here").
 2. When launching it, it installs immediately, do not click it more than once if the window takes a bit to pop up.
-3. Click the button `Sign in to GitHub.com` and sign in with the account you gave William.
+3. Click the button `Sign in to GitHub.com` and sign in with the account you gave William or me.
 4. Let the application open `GitHubDesktop`. Ignore the page that pops up and just click "`Finish`".
 5. If the repository was successfully shared with you, it should pop up!
 	
