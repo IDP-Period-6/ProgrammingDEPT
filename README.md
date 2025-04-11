@@ -1,5 +1,5 @@
 # Period 6 Robot Code
-Here lies the code for the Period 6 Robot! This readme is subject to change.
+Code for the Period 6 Robot! This readme is subject to change.
 
 ## How to Set Up VS Code
 ### 🪟 Windows
