@@ -44,7 +44,7 @@ Code for the Period 6 Robot! This readme is subject to change.
  [![](https://i.imgur.com/eiPRpA6.png)](https://i.imgur.com/eiPRpA6.png)
 	
 6. Click the repository then click clone,  then clone again.
-7. Don't touch anything here and click "`Open in Visual Studio Code`". Trust the authors.
+7. Don't touch anything here and click "`Open in Visual Studio Code`" (also `CTRL + Shift + A`). Trust the authors.
 8. Open the explorer (`CTRL + Shift + E`) and expand .vscode.
 	
  [![](https://i.imgur.com/jZQbRfv.png)](https://i.imgur.com/jZQbRfv.png)
