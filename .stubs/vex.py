@@ -2907,7 +2907,7 @@ class Motor55:
         '''
         return 0
 
-    def set_velocity(self, value: vexnumber, units: PercentUnits=PercentUnits.PERCENT):
+    def set_velocity(self, value: vexnumber, units: PercentUnits=PercentUnits.PERCENT): # type: ignore
         '''### Set default velocity for the motor
         This will be the velocity used for subsequent calls to spin if a velocity is not provided
         to that function.
