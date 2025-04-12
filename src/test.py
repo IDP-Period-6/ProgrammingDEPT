@@ -9,11 +9,8 @@
 
 # Library imports
 from vex import *
-import test
 
 # Brain should be defined by default
-brain=Brain()
-
-test.testcode()
-
-        
+def testcode():
+    brain = Brain()
+    brain.screen.print("This is the test function being called")
