@@ -9,9 +9,9 @@
 
 # Library imports
 from vex import *
+brain = Brain()
 
 # Code will be uploaded to a MicroSD card to insert into the brain
-# Do not upload this code to the brain directly
+# Do not upload this code to the brain directly except for testing purposes
 def testcode():
-    brain = Brain()
     brain.screen.print("This is the test function being called")
