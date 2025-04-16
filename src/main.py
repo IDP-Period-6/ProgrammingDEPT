@@ -15,5 +15,3 @@ import test
 brain=Brain()
 
 test.testcode()
-
-        
