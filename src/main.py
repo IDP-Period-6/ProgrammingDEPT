@@ -13,5 +13,3 @@ import test
 
 # Brain should be defined by default
 brain=Brain()
-
-test.testcode()
