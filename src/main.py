@@ -12,3 +12,4 @@ from vex import *
 
 # Brain should be defined by default
 brain=Brain()
+aivisionsensor = AiVision(Ports.PORT1)
