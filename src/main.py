@@ -14,7 +14,7 @@ from vex import *
 brain=Brain()
 
 # ai vision sensor code
-aivisionsensor = AiVision(Ports.PORT1, AiVision.ALL_TAGS)
+aivisionsensor = AiVision(Ports.PORT20, AiVision.ALL_TAGS)
 snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
 
 # inertial sensor code
