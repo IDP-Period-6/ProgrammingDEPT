@@ -12,6 +12,8 @@ from vex import *
 
 # Brain should be defined by default
 brain=Brain()
+
+# ai vision sensor code
 aivisionsensor = AiVision(Ports.PORT1, AiVision.ALL_TAGS)
 snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
 
