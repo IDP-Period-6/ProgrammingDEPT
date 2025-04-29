@@ -42,7 +42,7 @@ distanceChecker = False
 
 # actually used variables
 fowardCheck = False
-RobotFinished = False
+RobotFinished = True
 leftOrRight = 1
 startOrStop = False
 xCord = 6
@@ -70,24 +70,15 @@ while (RobotFinished == False and startOrStop == True):
     if(forwardCheck == False):
 	    yCord += 1
 
-
-
-def imgthread():
-    # function will run in a separate thread so it can continue running in the background
-    while aiChecker == True:
-        global snapshot
-        snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
-        wait(50)
-thread = Thread(imgthread)
-
 while aiChecker == True:
+    snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
     for obj in snapshot:
         brain.screen.set_cursor(1, 1)
         brain.screen.print("Tag detected: ", obj.id)
         wait(0.5, SECONDS)
         brain.screen.clear_screen()
 
-while distanceChecker == False:
+while distanceChecker == True:
     value = distanceSensor.object_distance(INCHES)
     if value <= 3:
         brain.screen.set_cursor(1,2)
