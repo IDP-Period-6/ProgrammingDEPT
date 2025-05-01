@@ -34,29 +34,33 @@ rightMotor1 = Motor(Ports.PORT4, GearSetting.RATIO_18_1)
 rightMotor2 = Motor(Ports.PORT5, GearSetting.RATIO_18_1)
 leftMotors = MotorGroup(leftMotor1, leftMotor2)
 rightMotors = MotorGroup(rightMotor1, rightMotor2)
+
+drivetrain = MotorGroup(leftMotors, rightMotors)
 # drivetrain = SmartDrive(leftMotors, rightMotors, Inertial, 319.19, 295, 40, MM) # change this
 
 #global variables for running
-aiChecker = True
+vialChecker = True
 distanceChecker = False
+tubeChecker = False
 
 # actually used variables
 fowardCheck = False
 RobotFinished = True
 leftOrRight = 1
-startOrStop = False
+start = False
 xCord = 6
 yCord = 0
 
+drivetrain.drive(FORWARD)
 
-
-while startOrStop == True:
+# checks when to start the entire autonomous routine
+while start == True:
     value = distanceSensor.object_distance(INCHES)
     if (value <= 3): 
         print("Drive Forward")
     elif(value > 3):
         print("Don't Drive Forward")
-        startOrStop = True		
+        start = True		
           
 def forwardIsClear():
     if(value > 5):
@@ -64,13 +68,13 @@ def forwardIsClear():
     elif(value < 5):
         forwardCheck = False
 
-while (RobotFinished == False and startOrStop == True):
+while (RobotFinished == False and start == True):
     forwardCheck = False
     forwardIsClear()
     if(forwardCheck == False):
 	    yCord += 1
 
-while aiChecker == True:
+while vialChecker == True:
     snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
     for obj in snapshot:
         brain.screen.set_cursor(1, 1)
@@ -90,3 +94,7 @@ while distanceChecker == True:
         print("START NOW!")
         wait(1, SECONDS)
         brain.screen.clear_screen()
+
+def dropOff():
+    while tubeChecker == True:
+        value 
