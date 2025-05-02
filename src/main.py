@@ -63,7 +63,6 @@ tubeChecker = False
 fowardCheck = False
 RobotFinished = True
 leftOrRight = 1
-start = False
 xCord = 6
 yCord = 0
 
