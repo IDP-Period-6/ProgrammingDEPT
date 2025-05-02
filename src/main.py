@@ -18,7 +18,7 @@ brain=Brain()
 
 # ai vision sensor code
 aivisionsensor = AiVision(Ports.PORT20, AiVision.ALL_TAGS)
-purple = Colordesc(1, 214, 72, 219, 10, 0.2)
+purple = Colordesc(1, 173, 100, 179, 10, 0.2)
 snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
 
 # inertial sensor code
@@ -37,7 +37,7 @@ leftMotor1 = Motor(Ports.PORT2, GearSetting.RATIO_18_1, False)
 rightMotor1 = Motor(Ports.PORT1, GearSetting.RATIO_18_1, True)
 # rightMotor2 = Motor(Ports.PORT5, GearSetting.RATIO_18_1)
 
-clawHeight = Motor(Ports.PORT4, GearSetting.RATIO_18_1)
+clawHeight = Motor(Ports.PORT4, GearSetting.RATIO_18_1, False)
 clawControl = Motor(Ports.PORT3, GearSetting.RATIO_18_1)
 
 leftMotors = MotorGroup(leftMotor1)
@@ -47,17 +47,18 @@ drivetrain = DriveTrain(leftMotors, rightMotors)
 # drivetrain = SmartDrive(leftMotors, rightMotors, Inertial, 319.19, 295, 40, MM) # change this
 #endregion 
 
-drivetrain.set_drive_velocity(5, PERCENT)
-drivetrain.set_turn_velocity(5, PERCENT)
+drivetrain.set_drive_velocity(0, PERCENT)
+drivetrain.set_turn_velocity(0, PERCENT)
 
 # drivetrain.drive(FORWARD)
 # wait(1, SECONDS)
 # drivetrain.turn_for(RIGHT, 90, DEGREES)
 
 #global variables for running
-vialChecker = True
+vialChecker = False
 distanceChecker = False
-tubeChecker = False
+tubeChecker = True
+start = False
 
 # actually used variables
 fowardCheck = False
@@ -127,14 +128,18 @@ def waitForLever():
             clawControl.spin_for(REVERSE, 90, DEGREES)        # add the claw movements here to make the lever clos
 
 
-
-def dropOff():
+def tubeProcess():
     while tubeChecker == True:
         aivisionsensor.color_detection(True)
         tubeColor = aivisionsensor.take_snapshot(purple)
+        print("color seen")
+        wait(0.5, SECONDS)
         if len(tubeColor) >= 1:
-            clawHeight.spin(FORWARD) #’bring the arm down’
+            print("color here")
+            clawHeight.spin(REVERSE) #’bring the arm down’
             clawControl.spin_for(REVERSE, 90, DEGREES) #’open claw’
             clawControl.spin_for(FORWARD, 90, DEGREES) #’close claw’
             clawHeight.spin(REVERSE) #’bring claw back up’
             #waitForLever()
+
+tubeProcess()
