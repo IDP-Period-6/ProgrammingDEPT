@@ -10,6 +10,7 @@
 
 # press the region declarations to collapse it
 #region declarations
+
 # Library imports
 from vex import *
 
@@ -17,15 +18,15 @@ from vex import *
 brain=Brain()
 
 # ai vision sensor code
-aivisionsensor = AiVision(Ports.PORT20, AiVision.ALL_TAGS)
 purple = Colordesc(1, 214, 72, 219, 10, 0.2)
+aivisionsensor = AiVision(Ports.PORT12, AiVision.ALL_TAGS, purple)
 snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
 
 # inertial sensor code
-# inertialSensor = Inertial(Ports.PORT10)
-# inertialSensor.calibrate()
-# while inertialSensor.is_calibrating():
-#     wait(100, MSEC)
+inertialSensor = Inertial(Ports.PORT10)
+inertialSensor.calibrate()
+while inertialSensor.is_calibrating():
+    wait(100, MSEC)
 
 # distance sensor code
 distanceSensor = Distance(Ports.PORT19)
@@ -50,9 +51,6 @@ drivetrain = DriveTrain(leftMotors, rightMotors)
 drivetrain.set_drive_velocity(5, PERCENT)
 drivetrain.set_turn_velocity(5, PERCENT)
 
-# drivetrain.drive(FORWARD)
-# wait(1, SECONDS)
-# drivetrain.turn_for(RIGHT, 90, DEGREES)
 
 #global variables for running
 vialChecker = True
@@ -60,46 +58,79 @@ distanceChecker = False
 tubeChecker = False
 
 # actually used variables
-fowardCheck = False
-RobotFinished = True
+forwardClear = False
+RobotFinished = False
 leftOrRight = 1
 start = False
-xCord = 6
-yCord = 0
+xCord = 1
+yCord = 2
 
 
  #’open claw’
 
 
-# checks when to start the entire autonomous routine
-while start == True:
+# 1 checks when to start the entire autonomous routine
+while start == False:
     value = distanceSensor.object_distance(INCHES)
     if (value <= 3): 
-        print("Drive Forward")
-    elif(value > 3):
         print("Don't Drive Forward")
+        wait(1, SECONDS)
+    elif(value > 3):
+        print("Drive Forward")
         start = True		
-          
+
+# 2 define the function called is the forward clear           
 def forwardIsClear():
-    if(value > 5):
-        forwardCheck = True
-    elif(value < 5):
-        forwardCheck = False
+    global forwardClear
+    value = distanceSensor.object_distance(INCHES)
+    if(value > 7):
+        forwardClear = True
+    elif(value < 7):
+        forwardClear = False
 
 while(RobotFinished == False and start == True):
-    forwardCheck = False
+    # drivetrain drive forward for one y coordinate 
     forwardIsClear()
-    if(forwardCheck == False):
-	    yCord += 1
+    if(forwardClear == False):
+        print("not clear")
+        wait(1, SECONDS)
+        #drivetrain turn left 
+        print("turned left")
+        forwardIsClear()
+        if(forwardClear == True):
+            #drivetrain drive forward for one x coordinate|
+            xCord += 1
+            print(xCord)
+            print(yCord)
+        elif(forwardClear == False):
+            # drivetrain turn right 180 degrees
+            print("turned right")
+            forwardIsClear()
+            if (forwardClear == True):
+                #drivetrain drive forward one x coord
+                xCord -= 1
+                print(xCord)
+                print(yCord)
+    elif(forwardClear == True):
+        print("clear")
+        wait(1, SECONDS)
+        forwardClear = True
+        yCord += 1
+        print(xCord)
+        print(yCord)
+        
 
-while vialChecker == True:
-    aivisionsensor.tag_detection(True)
-    snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
-    for obj in snapshot:
-        brain.screen.set_cursor(1, 1)
-        brain.screen.print("Tag detected: ", obj.id)
-        wait(0.5, SECONDS)
-        brain.screen.clear_screen()
+                
+
+def vialDetection():
+    while vialChecker == True:
+        aivisionsensor.tag_detection(True)
+        snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
+        for obj in snapshot:
+            brain.screen.set_cursor(1, 1)
+            brain.screen.print("Tag detected: ", obj.id)
+            wait(0.5, SECONDS)
+            brain.screen.clear_screen()
 
 while distanceChecker == True:
     value = distanceSensor.object_distance(INCHES)
@@ -125,17 +156,26 @@ def waitForLever():
         brain.screen.clear_screen()
         if obj.id == 5:
             clawControl.set_velocity(15, PERCENT)
-            clawControl.spin_for(REVERSE, 90, DEGREES)        # add the claw movements here to make the lever clos
+            clawControl.spin_for(REVERSE, 90, DEGREES)
+
 
 
 
 def dropOff():
+    aivisionsensor.color_detection(True)
+    print("hi")
     while tubeChecker == True:
-        aivisionsensor.color_detection(True)
+        purpl = Colordesc(1, 214, 72, 219, 10, 0.2)
         tubeColor = aivisionsensor.take_snapshot(purple)
+        print("this ran too")
+        wait(1,SECONDS)
+        print(tubeColor)
         if len(tubeColor) >= 1:
+            print("ran")
             clawHeight.spin(FORWARD) #’bring the arm down’
             clawControl.spin_for(REVERSE, 90, DEGREES) #’open claw’
             clawControl.spin_for(FORWARD, 90, DEGREES) #’close claw’
-            clawHeight.spin(REVERSE) #’bring claw back up’
-            #waitForLever()
+            clawHeight.spin(REVERSE) 
+            print("ColorDetected") #’bring claw back up’
+            # waitForLever()
+ 
