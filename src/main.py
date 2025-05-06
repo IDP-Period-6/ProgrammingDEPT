@@ -38,7 +38,7 @@ leftMotor1 = Motor(Ports.PORT2, GearSetting.RATIO_18_1, False)
 rightMotor1 = Motor(Ports.PORT1, GearSetting.RATIO_18_1, True)
 # rightMotor2 = Motor(Ports.PORT5, GearSetting.RATIO_18_1)
 
-clawHeight = Motor(Ports.PORT4, GearSetting.RATIO_18_1)
+clawHeight = Motor(Ports.PORT4, GearSetting.RATIO_18_1, False)
 clawControl = Motor(Ports.PORT3, GearSetting.RATIO_18_1)
 
 leftMotors = MotorGroup(leftMotor1)
@@ -48,22 +48,23 @@ drivetrain = DriveTrain(leftMotors, rightMotors)
 # drivetrain = SmartDrive(leftMotors, rightMotors, Inertial, 319.19, 295, 40, MM) # change this
 #endregion 
 
-drivetrain.set_drive_velocity(5, PERCENT)
-drivetrain.set_turn_velocity(5, PERCENT)
+drivetrain.set_drive_velocity(0, PERCENT)
+drivetrain.set_turn_velocity(0, PERCENT)
 
 
 #global variables for running
-vialChecker = True
+vialChecker = False
 distanceChecker = False
-tubeChecker = False
+tubeChecker = True
+start = False
 
 # actually used variables
 forwardClear = False
 RobotFinished = False
 leftOrRight = 1
 start = False
-xCord = 1
-yCord = 2
+xCord = 6
+yCord = 0
 
 
  #’open claw’
@@ -162,20 +163,12 @@ def waitForLever():
 
 
 def dropOff():
-    aivisionsensor.color_detection(True)
-    print("hi")
     while tubeChecker == True:
         purpl = Colordesc(1, 214, 72, 219, 10, 0.2)
         tubeColor = aivisionsensor.take_snapshot(purple)
-        print("this ran too")
-        wait(1,SECONDS)
-        print(tubeColor)
         if len(tubeColor) >= 1:
-            print("ran")
             clawHeight.spin(FORWARD) #’bring the arm down’
             clawControl.spin_for(REVERSE, 90, DEGREES) #’open claw’
             clawControl.spin_for(FORWARD, 90, DEGREES) #’close claw’
-            clawHeight.spin(REVERSE) 
-            print("ColorDetected") #’bring claw back up’
-            # waitForLever()
- 
+            clawHeight.spin(REVERSE) #’bring claw back up’
+            #waitForLever()
