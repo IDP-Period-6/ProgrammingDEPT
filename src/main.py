@@ -23,52 +23,61 @@ aivisionsensor = AiVision(Ports.PORT12, AiVision.ALL_TAGS, purple)
 snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
 
 # inertial sensor code
-inertialSensor = Inertial(Ports.PORT10)
+inertialSensor = Inertial(Ports.PORT6)
+inertialSensor.set_heading(0, DEGREES)
 inertialSensor.calibrate()
 while inertialSensor.is_calibrating():
     wait(100, MSEC)
 
+
+
 # distance sensor code
-distanceSensor = Distance(Ports.PORT19)
+distanceSensor = Distance(Ports.PORT7)
 value = distanceSensor.object_distance(INCHES)
 
 # drivetrain code
-leftMotor1 = Motor(Ports.PORT2, GearSetting.RATIO_18_1, False)
-# leftMotor2 = Motor(Ports.PORT3, GearSetting.RATIO_18_1)
-rightMotor1 = Motor(Ports.PORT1, GearSetting.RATIO_18_1, True)
-# rightMotor2 = Motor(Ports.PORT5, GearSetting.RATIO_18_1)
+leftMotor1 = Motor(Ports.PORT4, GearSetting.RATIO_18_1,)
+leftMotor2 = Motor(Ports.PORT5, GearSetting.RATIO_18_1, )
+
+
+rightMotor1 = Motor(Ports.PORT1, GearSetting.RATIO_18_1,  )
+rightMotor2 = Motor(Ports.PORT2, GearSetting.RATIO_18_1,  )
+
+rightMotor1.set_reversed(True)
+rightMotor2.set_reversed(True)
 
 clawHeight = Motor(Ports.PORT4, GearSetting.RATIO_18_1, False)
 clawControl = Motor(Ports.PORT3, GearSetting.RATIO_18_1)
 
-leftMotors = MotorGroup(leftMotor1)
-rightMotors = MotorGroup(rightMotor1)
+leftMotors = MotorGroup(leftMotor1, leftMotor2, )
+rightMotors = MotorGroup(rightMotor1, rightMotor2, )
 
-drivetrain = DriveTrain(leftMotors, rightMotors)
-# drivetrain = SmartDrive(leftMotors, rightMotors, Inertial, 319.19, 295, 40, MM) # change this
+drivetrain = SmartDrive(leftMotors, rightMotors, inertialSensor)
 #endregion 
 
-drivetrain.set_drive_velocity(0, PERCENT)
-drivetrain.set_turn_velocity(0, PERCENT)
+drivetrain.set_drive_velocity(10, PERCENT)
+drivetrain.set_turn_velocity(10, PERCENT)
 
 
 #global variables for running
 vialChecker = False
 distanceChecker = False
 tubeChecker = True
-start = False
+start = False 
 
 # actually used variables
 forwardClear = False
 RobotFinished = False
 leftOrRight = 1
-start = False
-xCord = 6
+start = True
+xCord = 6  
 yCord = 0
 
 
  #’open claw’
 
+leftMotors.spin(FORWARD)
+rightMotors.spin(FORWARD)
 
 # 1 checks when to start the entire autonomous routine
 while start == False:
@@ -88,6 +97,19 @@ def forwardIsClear():
         forwardClear = True
     elif(value < 7):
         forwardClear = False
+def coordinate_tracker():
+    global xCord
+    global yCord
+    if -3 <=inertialSensor.heading() <=3 : 
+        yCord += 1
+    elif inertialSensor.heading() == 90:
+        xCord -= 1
+    elif inertialSensor.heading() == 180:
+        yCord -= 1
+    elif inertialSensor.heading() == 270:
+        xCord += 1
+    print(xCord)
+    print(yCord)
 
 while(RobotFinished == False and start == True):
     # drivetrain drive forward for one y coordinate 
@@ -100,25 +122,19 @@ while(RobotFinished == False and start == True):
         forwardIsClear()
         if(forwardClear == True):
             #drivetrain drive forward for one x coordinate|
-            xCord += 1
-            print(xCord)
-            print(yCord)
+            coordinate_tracker()
         elif(forwardClear == False):
             # drivetrain turn right 180 degrees
             print("turned right")
             forwardIsClear()
             if (forwardClear == True):
                 #drivetrain drive forward one x coord
-                xCord -= 1
-                print(xCord)
-                print(yCord)
+                coordinate_tracker()
     elif(forwardClear == True):
         print("clear")
         wait(1, SECONDS)
         forwardClear = True
-        yCord += 1
-        print(xCord)
-        print(yCord)
+        coordinate_tracker()     
         
 
                 
