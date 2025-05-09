@@ -39,6 +39,9 @@ value = distanceSensor.object_distance(INCHES)
 leftMotor1 = Motor(Ports.PORT4, GearSetting.RATIO_18_1,)
 leftMotor2 = Motor(Ports.PORT5, GearSetting.RATIO_18_1, )
 
+leftMotor1.set_reversed(True)
+leftMotor2.set_reversed(True)
+
 
 rightMotor1 = Motor(Ports.PORT1, GearSetting.RATIO_18_1,  )
 rightMotor2 = Motor(Ports.PORT2, GearSetting.RATIO_18_1,  )
@@ -76,8 +79,7 @@ yCord = 0
 
  #’open claw’
 
-leftMotors.spin(FORWARD)
-rightMotors.spin(FORWARD)
+drivetrain.drive(REVERSE)
 
 # 1 checks when to start the entire autonomous routine
 while start == False:
