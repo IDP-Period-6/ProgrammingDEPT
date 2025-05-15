@@ -23,7 +23,7 @@ aivisionsensor = AiVision(Ports.PORT12, AiVision.ALL_TAGS, purple)
 snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
 
 # inertial sensor code
-inertialSensor = Inertial(Ports.PORT6)
+inertialSensor = Inertial(Ports.PORT4)
 inertialSensor.set_heading(0, DEGREES)
 inertialSensor.calibrate()
 while inertialSensor.is_calibrating():
@@ -32,12 +32,19 @@ while inertialSensor.is_calibrating():
 
 
 # distance sensor code
-distanceSensor = Distance(Ports.PORT7)
+distanceSensor = Distance(Ports.PORT5)
 value = distanceSensor.object_distance(INCHES)
 
+rightDistance = Distance(Ports.PORT3)
+rightValue = rightDistance.object_distance(INCHES)
+
+leftDistance = Distance(Ports.PORT13)
+leftValue = leftDistance.object_distance(INCHES)
+
+
 # drivetrain code
-leftMotor1 = Motor(Ports.PORT4, GearSetting.RATIO_18_1,)
-leftMotor2 = Motor(Ports.PORT5, GearSetting.RATIO_18_1, )
+leftMotor1 = Motor(Ports.PORT11, GearSetting.RATIO_18_1,)
+leftMotor2 = Motor(Ports.PORT12, GearSetting.RATIO_18_1, )
 
 leftMotor1.set_reversed(True)
 leftMotor2.set_reversed(True)
@@ -46,8 +53,6 @@ leftMotor2.set_reversed(True)
 rightMotor1 = Motor(Ports.PORT1, GearSetting.RATIO_18_1,  )
 rightMotor2 = Motor(Ports.PORT2, GearSetting.RATIO_18_1,  )
 
-rightMotor1.set_reversed(True)
-rightMotor2.set_reversed(True)
 
 clawHeight = Motor(Ports.PORT4, GearSetting.RATIO_18_1, False)
 clawControl = Motor(Ports.PORT3, GearSetting.RATIO_18_1)
@@ -58,8 +63,6 @@ rightMotors = MotorGroup(rightMotor1, rightMotor2, )
 drivetrain = SmartDrive(leftMotors, rightMotors, inertialSensor)
 #endregion 
 
-drivetrain.set_drive_velocity(10, PERCENT)
-drivetrain.set_turn_velocity(10, PERCENT)
 
 
 #global variables for running
@@ -70,16 +73,16 @@ start = False
 
 # actually used variables
 forwardClear = False
+leftValue = False
+rightValue = False
 RobotFinished = False
 leftOrRight = 1
-start = True
-xCord = 6  
+start = False
+
+xCord = 6 
 yCord = 0
 
 
- #’open claw’
-
-drivetrain.drive(REVERSE)
 
 # 1 checks when to start the entire autonomous routine
 while start == False:
@@ -89,16 +92,34 @@ while start == False:
         wait(1, SECONDS)
     elif(value > 3):
         print("Drive Forward")
+        drivetrain.drive(FORWARD)
         start = True		
 
 # 2 define the function called is the forward clear           
 def forwardIsClear():
     global forwardClear
     value = distanceSensor.object_distance(INCHES)
-    if(value > 7):
+    if(value > 13.5):
         forwardClear = True
-    elif(value < 7):
+    elif(value < 13.5):
         forwardClear = False
+
+def leftIsClear():
+    global leftValue
+    leftValue = leftDistance.object_distance(INCHES)
+    if (value > 7):
+        leftValue = True
+    elif(value < 7):
+        leftValue = False
+
+def rightIsClear():
+    global rightValue
+    rightValue = rightDistance.object_distance(INCHES)
+    if (value > 7):
+        rightValue = True
+    elif(value < 7):
+        rightValue = False
+
 def coordinate_tracker():
     global xCord
     global yCord
@@ -118,16 +139,18 @@ while(RobotFinished == False and start == True):
     forwardIsClear()
     if(forwardClear == False):
         print("not clear")
-        wait(1, SECONDS)
-        #drivetrain turn left 
-        print("turned left")
-        forwardIsClear()
-        if(forwardClear == True):
-            #drivetrain drive forward for one x coordinate|
+        leftIsClear()
+        if(leftValue == False):
+            drivetrain.turn_to_heading(270, DEGREES)
+            print("turned left")
+            drivetrain.drive_for(6, INCHES)
+        elif(leftValue == True):
+            #drivetrain drive forward for one x coordinate
             coordinate_tracker()
         elif(forwardClear == False):
             # drivetrain turn right 180 degrees
             print("turned right")
+            drivetrain.turn_to_heading(180, DEGREES)
             forwardIsClear()
             if (forwardClear == True):
                 #drivetrain drive forward one x coord
