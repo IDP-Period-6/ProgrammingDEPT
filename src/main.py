@@ -174,6 +174,8 @@ def vialDetection():
             wait(0.5, SECONDS)
             brain.screen.clear_screen()
 
+
+
 while distanceChecker == True:
     value = distanceSensor.object_distance(INCHES)
     if value <= 3:
@@ -205,11 +207,10 @@ def waitForLever():
 
 def dropOff():
     while tubeChecker == True:
-        purpl = Colordesc(1, 214, 72, 219, 10, 0.2)
         tubeColor = aivisionsensor.take_snapshot(purple)
         if len(tubeColor) >= 1:
-            clawHeight.spin(FORWARD) #’bring the arm down’
-            clawControl.spin_for(REVERSE, 90, DEGREES) #’open claw’
-            clawControl.spin_for(FORWARD, 90, DEGREES) #’close claw’
-            clawHeight.spin(REVERSE) #’bring claw back up’
+            for i in tubeColor:
+            
+                
             #waitForLever()
+        
