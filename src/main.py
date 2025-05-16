@@ -120,19 +120,26 @@ def coordinate_tracker():
     print(xCord)
     print(yCord)  
 
+drivetrain.set_drive_velocity(10, PERCENT)
 def vialDetection():
     while vialChecker == True:
         aivisionsensor.tag_detection(True)
         snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
         for obj in snapshot:
             print("Tag detected: ", obj.id)
-            if obj.id == 7:
-                drivetrain.drive_for(FORWARD, 0.5, INCHES)
+            if obj.id == 6:
+                drivetrain.drive_for(FORWARD, 2.5, INCHES)
                 wait(1, SECONDS)
-                clawControl.spin_for(FORWARD, 20, DEGREES)
+                clawControl.spin_for(FORWARD, 70, DEGREES)
+                wait(1,SECONDS)
+                clawHeight.spin_for(FORWARD, 100, DEGREES)
                 wait(1, SECONDS)
-                clawHeight.spin_for(FORWARD, 60, DEGREES)
-       
+                drivetrain.drive_for(REVERSE, 5, INCHES)
+                break
+            break
+        break
+
+
 clawHeight.spin_for(FORWARD, 250, DEGREES)
 clawControl.spin_for(REVERSE, 55, DEGREES)
 vialDetection()
