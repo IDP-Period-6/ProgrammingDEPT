@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
 	"python.analysis.stubPath": ".stubs",
+=======
+	"python.analysis.stubPath": "c:\\Users\\willg\\AppData\\Roaming\\Code\\User\\globalStorage\\vexrobotics.vexcode\\sdk\\python\\V5\\V5_1_0_1_25\\vexv5\\stubs",
+>>>>>>> 2e93cb0089d070fd89863806e9d5b932792c098d
 	"python.analysis.diagnosticMode": "workspace",
 	"python.analysis.typeCheckingMode": "basic"
 }
