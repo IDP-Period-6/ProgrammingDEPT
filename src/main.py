@@ -64,7 +64,7 @@ drivetrain = SmartDrive(leftMotors, rightMotors, inertialSensor)
 #endregion 
 
 #global variables for running
-vialChecker = True
+vialChecker = False
 distanceChecker = False
 tubeChecker = True
 start = False 
@@ -144,11 +144,13 @@ def vialDetection():
         
         
 # set this as the height of the claw to stay at
-clawHeight.spin_for(FORWARD, 260, DEGREES)
+clawControl.spin_for(FORWARD, 60, DEGREES)
+
+clawHeight.spin_for(FORWARD, 255, DEGREES)
 # this is the vial wideness
-clawControl.spin_for(REVERSE, 55, DEGREES)
-wait(1, SECONDS)
-vialDetection()
+# clawControl.spin_for(REVERSE, 55, DEGREES)
+# wait(1, SECONDS)
+# vialDetection()
 
 
 
@@ -228,7 +230,12 @@ def waitForLever():
 
 def dropOff():
     while tubeChecker == True:
-        purpl = Colordesc(1, 214, 72, 219, 10, 0.2)
         tubeColor = aivisionsensor.take_snapshot(purple)
         if len(tubeColor) >= 1:
-            
+            print("tube detected")
+            clawHeight.spin_for(FORWARD, 100, DEGREES)
+            drivetrain.drive_for(FORWARD, 3, INCHES)
+            clawHeight.spin_for(REVERSE, 30, DEGREES)
+            clawControl.spin_for(REVERSE, 60, DEGREES)
+
+dropOff()
