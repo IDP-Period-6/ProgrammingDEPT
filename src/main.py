@@ -170,29 +170,88 @@ while start == False:
 while(RobotFinished == False and start == True):
     # drivetrain drive forward for one y coordinate 
     forwardIsClear()
-    if(forwardClear == False):
-            print("not clear")
+    if (yCord == 6 and xCord == 8):
+        # if the coordinates of the robot are perfectly in front of the vials
+        # then we can stop the robot
+        drivetrain.stop(BRAKE)
+        RobotFinished = True
+        start = False
+        break
+    elif(forwardClear == False):
+            # the front of the robot is not clear 
+            # we must check the left side first then the right side
+            print("forward is not clear")
             leftIsClear()
-            if leftClear == False:
+            # called our function to check if left side is clear
+            if (leftClear == False):
+                # left side is not clear we must check the right side
                 print("left is not clear")
+                rightIsClear()
+                if(rightClear == False):
+                    # the right side is not clear so we just have to back up though this is very RARE!!!
+                    print("not possible")
+                    drivetrain.drive_for(REVERSE, 6, INCHES)
+                    yCord -= 1
+                    drivetrain.stop(BRAKE)
+                elif(rightClear == True):
+                    # the right side is clear so we turn to the right side
+                    print("right side is clear")
+                    drivetrain.turn_to_heading(90, DEGREES)
+                    drivetrain.drive_for(FORWARD, 6, INCHES)
+                    coordinate_tracker()
+                    leftIsClear()
+                    if(leftClear == True):
+                        # this means that the left AKA FRONT is clear
+                        drivetrain.turn_to_heading(0, DEGREES)
+                        drivetrain.drive_for(FORWARD, 6, INCHES)
+                        coordinate_tracker()
+                    elif(leftClear == False):
+                        # the front is not clear
+                        forwardIsClear()
+                        if(forwardClear == True):
+                            drivetrain.drive_for(FORWARD, 6, INCHES)
+                            coordinate_tracker()
+                        elif(forwardClear == False):
+                            # all sides are not clear
+                            print("not possible")
             elif(leftClear == True):
+                # the left side is clear so we can turn left
+                print("left side is clear")
                 drivetrain.turn_to_heading(-90, DEGREES)
+                drivetrain.drive_for(FORWARD, 6, INCHES)
                 coordinate_tracker()
-                drivetrain.drive_for(6, INCHES)
-            elif(forwardClear == False):
-                # drivetrain turn right 180 degrees
-                print("turned right")
-                drivetrain.turn_to_heading(180, DEGREES)
-                forwardIsClear()
-            if (forwardClear == True):
-                #drivetrain drive forward one x coord
-                coordinate_tracker()
+                rightIsClear()
+                # we are checking to see if the right side is clear aka the FRONT SIDE
+                # if the front side is clear, we are able to face back forward
+                if(rightClear == False):
+                    # the right side is not clear
+                    print("right side aka FRONT is not clear")
+                    # now we have to check if the front is clear to continue driving forward
+                    forwardIsClear()
+                    if (forwardClear == True):
+                        # if the front is clear we can drive forward again
+                        print("front side is clear AKA LEFT")
+                        drivetrain.drive_for(FORWARD, 6, INCHES)                        
+                        coordinate_tracker()
+                    elif (forwardClear == False):
+                        print("the LEFT side is NOT clear")
+                        # the forward is not clear
+                        # so we have to back up
+                        print("we are stuck")
+                        drivetrain.stop(BRAKE)
+                elif(rightClear == True):
+                    # the right side is clear so we can turn back to the front
+                    print("the FRONT side is clear so we can start again")
+                    drivetrain.turn_to_heading(0, DEGREES)
+                    drivetrain.drive_for(FORWARD, 6, INCHES)
+                    coordinate_tracker()
     elif(forwardClear == True):
+        # the front of the robot is clear so we will continue driving forward
         print("clear")
         wait(1, SECONDS)
         forwardClear = True
         drivetrain.drive_for(6, INCHES)
-        coordinate_tracker()     
+        coordinate_tracker()
         
 
                 
