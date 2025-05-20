@@ -63,8 +63,6 @@ rightMotors = MotorGroup(rightMotor1, rightMotor2, )
 drivetrain = SmartDrive(leftMotors, rightMotors, inertialSensor)
 #endregion 
 
-
-
 #global variables for running
 vialChecker = True
 distanceChecker = False
@@ -112,36 +110,44 @@ def coordinate_tracker():
     if inertialSensor.heading() <= 10 and inertialSensor.heading() >= 350: 
         yCord += 1
     elif inertialSensor.heading() <= 80 and inertialSensor.heading() >= 100:
-        xCord -= 1
+        xCord += 1
     elif inertialSensor.heading() <= 170 and inertialSensor.heading() >= 190:
         yCord -= 1
     elif inertialSensor.heading() <= 260 and inertialSensor.heading() >= 280:
-        xCord += 1
+        xCord -= 1
     print(xCord)
-    print(yCord)  
+    print(yCord)
 
 drivetrain.set_drive_velocity(10, PERCENT)
 def vialDetection():
     while vialChecker == True:
         aivisionsensor.tag_detection(True)
         snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
-        for obj in snapshot:
-            print("Tag detected: ", obj.id)
-            if obj.id == 6:
-                drivetrain.drive_for(FORWARD, 2.5, INCHES)
-                wait(1, SECONDS)
-                clawControl.spin_for(FORWARD, 70, DEGREES)
-                wait(1,SECONDS)
-                clawHeight.spin_for(FORWARD, 100, DEGREES)
-                wait(1, SECONDS)
-                drivetrain.drive_for(REVERSE, 5, INCHES)
-                break
+        value = distanceSensor.object_distance(MM)
+        print("hello")
+        if(value < 477):
+            for obj in snapshot:
+                print("Tag detected: ", obj.id)
+                if obj.id == 9:
+                    drivetrain.drive_for(FORWARD, 2.5, INCHES)
+                    wait(1, SECONDS)
+                    clawControl.spin_for(FORWARD, 70, DEGREES)
+                    wait(1,SECONDS)
+                    clawHeight.spin_for(FORWARD, 100, DEGREES)
+                    wait(1, SECONDS)
+                    drivetrain.drive_for(REVERSE, 5, INCHES)
+                    break
             break
-        break
-
-
-clawHeight.spin_for(FORWARD, 250, DEGREES)
+        elif(value > 477):
+            print("not ready to check")
+            drivetrain.drive_for(FORWARD, 1, MM)
+        
+        
+# set this as the height of the claw to stay at
+clawHeight.spin_for(FORWARD, 260, DEGREES)
+# this is the vial wideness
 clawControl.spin_for(REVERSE, 55, DEGREES)
+wait(1, SECONDS)
 vialDetection()
 
 
@@ -165,13 +171,12 @@ while(RobotFinished == False and start == True):
     if(forwardClear == False):
             print("not clear")
             leftIsClear()
-            if(leftClear == False):
-                drivetrain.turn_to_heading(-90, DEGREES)
-                print("turned left")
-                drivetrain.drive_for(6, INCHES)
+            if leftClear == False:
+                print("left is not clear")
             elif(leftClear == True):
-                #drivetrain drive forward for one x coordinate
+                drivetrain.turn_to_heading(-90, DEGREES)
                 coordinate_tracker()
+                drivetrain.drive_for(6, INCHES)
             elif(forwardClear == False):
                 # drivetrain turn right 180 degrees
                 print("turned right")
@@ -184,6 +189,7 @@ while(RobotFinished == False and start == True):
         print("clear")
         wait(1, SECONDS)
         forwardClear = True
+        drivetrain.drive_for(6, INCHES)
         coordinate_tracker()     
         
 
@@ -225,8 +231,4 @@ def dropOff():
         purpl = Colordesc(1, 214, 72, 219, 10, 0.2)
         tubeColor = aivisionsensor.take_snapshot(purple)
         if len(tubeColor) >= 1:
-            clawHeight.spin(FORWARD) #’bring the arm down’
-            clawControl.spin_for(REVERSE, 90, DEGREES) #’open claw’
-            clawControl.spin_for(FORWARD, 90, DEGREES) #’close claw’
-            clawHeight.spin(REVERSE) #’bring claw back up’
-            #waitForLever()
+            
