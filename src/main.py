@@ -17,6 +17,73 @@ from vex import *
 # Brain should be defined by default
 brain=Brain()
 
+
+# define variables used for controlling motors based on controller inputs
+controller1 = Controller(PRIMARY)
+drivetrain_l_needs_to_be_stopped_controller_1 = False
+drivetrain_r_needs_to_be_stopped_controller_1 = False
+
+# define a task that will handle monitoring inputs from controller_1
+def rc_auto_loop_function_controller_1():
+    global drivetrain_l_needs_to_be_stopped_controller_1, drivetrain_r_needs_to_be_stopped_controller_1, remote_control_code_enabled
+    # process the controller input every 20 milliseconds
+    # update the motors based on the input values
+    while True:
+        if remote_control_code_enabled:
+            # stop the motors if the brain is calibrating
+            if inertialSensor.is_calibrating():
+                leftMotors.stop()
+                rightMotors.stop()
+                while inertialSensor.is_calibrating():
+                    sleep(25, MSEC)
+            
+            # calculate the drivetrain motor velocities from the controller joystick axies
+            # left = axis3 + axis1
+            # right = axis3 - axis1
+            drivetrain_left_side_speed = controller1.axis3.position() + controller1.axis1.position()
+            drivetrain_right_side_speed = controller1.axis3.position() - controller1.axis1.position()
+            
+            # check if the value is inside of the deadband range
+            if drivetrain_left_side_speed < 5 and drivetrain_left_side_speed > -5:
+                # check if the left motor has already been stopped
+                if drivetrain_l_needs_to_be_stopped_controller_1:
+                    # stop the left drive motor
+                    leftMotors.stop()
+                    # tell the code that the left motor has been stopped
+                    drivetrain_l_needs_to_be_stopped_controller_1 = False
+            else:
+                # reset the toggle so that the deadband code knows to stop the left motor next
+                # time the input is in the deadband range
+                drivetrain_l_needs_to_be_stopped_controller_1 = True
+            # check if the value is inside of the deadband range
+            if drivetrain_right_side_speed < 5 and drivetrain_right_side_speed > -5:
+                # check if the right motor has already been stopped
+                if drivetrain_r_needs_to_be_stopped_controller_1:
+                    # stop the right drive motor
+                    rightMotors.stop()
+                    # tell the code that the right motor has been stopped
+                    drivetrain_r_needs_to_be_stopped_controller_1 = False
+            else:
+                # reset the toggle so that the deadband code knows to stop the right motor next
+                # time the input is in the deadband range
+                drivetrain_r_needs_to_be_stopped_controller_1 = True
+            
+            # only tell the left drive motor to spin if the values are not in the deadband range
+            if drivetrain_l_needs_to_be_stopped_controller_1:
+                leftMotors.set_velocity(drivetrain_left_side_speed, PERCENT)
+                leftMotors.spin(FORWARD)
+            # only tell the right drive motor to spin if the values are not in the deadband range
+            if drivetrain_r_needs_to_be_stopped_controller_1:
+                rightMotors.set_velocity(drivetrain_right_side_speed, PERCENT)
+                rightMotors.spin(FORWARD)
+        # wait before repeating the process
+        wait(20, MSEC)
+
+# define variable for remote controller enable/disable
+remote_control_code_enabled = True
+
+rc_auto_loop_thread_controller_1 = Thread(rc_auto_loop_function_controller_1)
+
 # ai vision sensor code
 purple = Colordesc(1, 214, 72, 219, 10, 0.2)
 aivisionsensor = AiVision(Ports.PORT14, AiVision.ALL_TAGS, purple)
@@ -83,9 +150,9 @@ yCord = 0
 def forwardIsClear():
     global forwardClear
     value = distanceSensor.object_distance(INCHES)
-    if(value > 13.5):
+    if(value > 7):
         forwardClear = True
-    elif(value < 13.5):
+    elif(value < 7):
         forwardClear = False
 
 def leftIsClear():
@@ -170,6 +237,7 @@ while start == False:
 while(RobotFinished == False and start == True):
     # drivetrain drive forward for one y coordinate 
     forwardIsClear()
+    drivetrain.set_drive_velocity(20, PERCENT)
     if (yCord == 6 and xCord == 8):
         # if the coordinates of the robot are perfectly in front of the vials
         # then we can stop the robot
