@@ -229,8 +229,6 @@ while start == False:
         print("Don't Drive Forward")
     elif(value > 12):
         print("Drive Forward")
-        drivetrain.drive_for(84, INCHES)
-        drivetrain.turn_to_heading(-90, DEGREES)
         start = True		
 
 
