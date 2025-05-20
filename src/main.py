@@ -231,11 +231,18 @@ def waitForLever():
 def dropOff():
     while tubeChecker == True:
         tubeColor = aivisionsensor.take_snapshot(purple)
-        if len(tubeColor) >= 1:
-            print("tube detected")
-            clawHeight.spin_for(FORWARD, 100, DEGREES)
-            drivetrain.drive_for(FORWARD, 3, INCHES)
-            clawHeight.spin_for(REVERSE, 30, DEGREES)
-            clawControl.spin_for(REVERSE, 60, DEGREES)
-
+        value = distanceSensor.object_distance(MM)
+        if (value < 427):
+            if len(tubeColor) >= 1:
+                print("tube detected")
+                clawHeight.spin_for(FORWARD, 140, DEGREES)
+                drivetrain.drive_for(FORWARD, 4, INCHES)
+                wait(1, SECONDS)
+                clawHeight.set_velocity(10, PERCENT)
+                clawHeight.spin_for(REVERSE, 60, DEGREES)
+                wait(1, SECONDS)
+                clawControl.spin_for(REVERSE, 60, DEGREES)
+                drivetrain.drive_for(REVERSE, 3, INCHES)
+        elif(value > 428):
+            drivetrain.drive_for(FORWARD, 1, MM)
 dropOff()
