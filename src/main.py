@@ -52,10 +52,15 @@ rightMotors = MotorGroup(rightMotor1, rightMotor2, )
 
 drivetrain = SmartDrive(leftMotors, rightMotors, inertialSensor)
 
-# define variable for remote controller enable/disable
-remote_control_code_enabled = True
+# define variables used for controlling motors based on controller inputs
+controller_1_left_shoulder_control_motors_stopped = True
+controller_1_right_shoulder_control_motors_stopped = True
+drivetrain_l_needs_to_be_stopped_controller_1 = False
+drivetrain_r_needs_to_be_stopped_controller_1 = False
+
+# define a task that will handle monitoring inputs from controller_1
 def rc_auto_loop_function_controller_1():
-    global drivetrain_l_needs_to_be_stopped_controller_1, drivetrain_r_needs_to_be_stopped_controller_1, remote_control_code_enabled
+    global drivetrain_l_needs_to_be_stopped_controller_1, drivetrain_r_needs_to_be_stopped_controller_1, controller_1_left_shoulder_control_motors_stopped, controller_1_right_shoulder_control_motors_stopped, remote_control_code_enabled
     # process the controller input every 20 milliseconds
     # update the motors based on the input values
     while True:
@@ -106,9 +111,40 @@ def rc_auto_loop_function_controller_1():
             if drivetrain_r_needs_to_be_stopped_controller_1:
                 rightMotors.set_velocity(drivetrain_right_side_speed, PERCENT)
                 rightMotors.spin(FORWARD)
+            # check the buttonL1/buttonL2 status
+            # to control clawHeight
+            if controller1.buttonL1.pressing():
+                clawHeight.spin(FORWARD)
+                controller_1_left_shoulder_control_motors_stopped = False
+            elif controller1.buttonL2.pressing():
+                clawHeight.spin(REVERSE)
+                controller_1_left_shoulder_control_motors_stopped = False
+            elif not controller_1_left_shoulder_control_motors_stopped:
+                clawHeight.stop()
+                # set the toggle so that we don't constantly tell the motor to stop when
+                # the buttons are released
+                controller_1_left_shoulder_control_motors_stopped = True
+            # check the buttonR1/buttonR2 status
+            # to control clawControl
+            if controller1.buttonR1.pressing():
+                clawControl.spin(FORWARD)
+                controller_1_right_shoulder_control_motors_stopped = False
+            elif controller1.buttonR2.pressing():
+                clawControl.spin(REVERSE)
+                controller_1_right_shoulder_control_motors_stopped = False
+            elif not controller_1_right_shoulder_control_motors_stopped:
+                clawControl.stop()
+                # set the toggle so that we don't constantly tell the motor to stop when
+                # the buttons are released
+                controller_1_right_shoulder_control_motors_stopped = True
         # wait before repeating the process
         wait(20, MSEC)
+
+# define variable for remote controller enable/disable
+remote_control_code_enabled = True
+
 rc_auto_loop_thread_controller_1 = Thread(rc_auto_loop_function_controller_1)
+
 
 # ai vision sensor code
 # Allows us to get the purple color signature 
