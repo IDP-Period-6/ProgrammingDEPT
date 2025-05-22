@@ -52,7 +52,9 @@ rightMotor2 = Motor(Ports.PORT2, GearSetting.RATIO_18_1,  )
 # so the brain can read the code involving the right motors
 clawHeight = Motor(Ports.PORT6, GearSetting.RATIO_18_1, False)
 clawHeight.set_velocity(100, PERCENT)
+# This sets the claw height motor to be reversed
 clawHeight.set_stopping(BRAKE)
+# This sets the claw height motor to be reversed
 
 clawControl = Motor(Ports.PORT15, GearSetting.RATIO_18_1)   
 
@@ -319,9 +321,12 @@ def vialDetection():
 # this is the vial wideness
 #wait(1, SECONDS)
 #vialDetection()
-                    
+# 
+# 
+# # this is the claw control that we must start the entire autonomous routine with             
 clawHeight.spin_for(FORWARD, 240, DEGREES)
 clawControl.spin_for(REVERSE, 90, DEGREES)
+
 # 1 checks when to start the entire autonomous routine
 while (start == False):
     value = distanceSensor.object_distance(MM)
@@ -348,6 +353,8 @@ while(RobotFinished == False and start == True):
     # This is checking if the up button is pressed
     if controller1.buttonUp.pressing():
         print("manual code started")
+        manual = True
+        # this is the manual code that allows the robot to be controlled
         break
     # This checks if the robot is in the finishing position
     # this will stop the robot from moving
@@ -449,8 +456,6 @@ while(RobotFinished == False and start == True):
         coordinate_tracker()
 
 
-
-
 #Should work needs testing
 def waitForLever():
     aivisionsensor.tag_detection(True)
@@ -466,7 +471,6 @@ def waitForLever():
         if obj.id == 5:
             clawControl.set_velocity(15, PERCENT)
             clawControl.spin_for(REVERSE, 90, DEGREES)
-
 
 
 #function for dropping the vial in the
@@ -507,3 +511,40 @@ clawHeight.spin_for(FORWARD, 240, DEGREES)
 drivetrain.set_heading(0, DEGREES)
 dropOff()
 '''
+
+
+while manual == True:
+    if controller1.buttonA.pressing():
+        # this is the manual code that allows the robot to be controlled
+        print("manaual vial detection")
+        # This makes sure that when we are checking which vial to grab
+        aivisionsensor.tag_detection(True)
+        snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
+        for obj in snapshot:                
+            #This will print to the screen the tag id of the tag that was detectedn
+            controller1.screen.print("Tag detected: ", obj.id)
+            #This will check if the tag is id is 9 and then run
+            # the code to pick up the vial
+            if obj.id == 9:
+                controller1.screen.print("correct vial detected with tag:", obj.id)
+    elif controller1.buttonB.pressing():
+        # this is the manual code that allows the robot to be controlled
+        print("manaual tube detection")
+        # This makes sure that when we are checking which vial to grab
+        aivisionsensor.color_detection(True)
+        tubeColor = aivisionsensor.take_snapshot(purple)
+        if len(tubeColor) >= 1:
+                print("tube detected and it is purple!")
+                controller1.screen.print("tube detected and it is purple!")
+    elif controller1.buttonX.pressing():
+        print("manual lever april tag detection")
+        aivisionsensor.tag_detection(True)
+        snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
+        for obj in snapshot:
+            controller1.screen.print("Tag detected: ", obj.id)
+            # This will check if the tag is id is 5 and then run
+            if obj.id == 5:
+                print("correct lever signal detected with tag:", obj.id)
+                controller1.screen.print("correct lever signal with tag:", obj.id)
+                
+                    
