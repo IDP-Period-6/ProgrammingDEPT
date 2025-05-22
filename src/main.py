@@ -201,7 +201,7 @@ leftValue = leftDistance.object_distance(INCHES)
 
         
 #global variables for running
-vialChecker = True
+vialChecker = False
 distanceChecker = False
 tubeChecker = False
 start = False 
@@ -210,7 +210,8 @@ start = False
 forwardClear = False
 leftClear = False
 rightClear = False
-RobotFinished = False
+RobotFinished = True
+manual = False
 leftOrRight = 1
 
 #robot position coordinates
@@ -278,42 +279,10 @@ def coordinate_tracker():
     else:
         print("nothing ran")
         print("robot angle: ", robotAngle)
-    print(xCord)
-    print(yCord)
+    brain.screen.print(xCord)
+    brain.screen.print(yCord)
 
 
-def vialDetection():
-    # This makes sure that when we are checking which vial to grab
-    #we take a picture of all of the availabe tags and sort through them
-    #in the next statement
-    while vialChecker == True:
-        aivisionsensor.tag_detection(True)
-        snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
-        value = distanceSensor.object_distance(MM)
-        drivetrain.set_drive_velocity(10, PERCENT)
-        if(value < 477):
-            #This is a for loop used to check every single april tag
-            #that was taken inside the picture for the vials
-            for obj in snapshot:                
-                #This will print to the screen the tag id of the tag that was detectedn
-                print("Tag detected: ", obj.id)
-                #This will check if the tag is id is 9 and then run
-                # the code to pick up the vial
-                if obj.id == 9:
-                    drivetrain.drive_for(FORWARD, 0.5, INCHES)
-                    clawControl.spin_for(FORWARD, 70, DEGREES)
-                    wait(1,SECONDS)
-                    clawHeight.spin_for(FORWARD, 100, DEGREES)
-                    wait(1, SECONDS)
-                    drivetrain.drive_for(REVERSE, 5, INCHES)
-                    break
-                break
-            break
-        # This is the else statement that will run if the distance sensor
-        #is not close enough to the vials
-        elif(value > 477):
-            print("not ready to check")
-            drivetrain.drive_for(FORWARD, 2, INCHES)
 
         
 # set this as the height of the claw to stay at
@@ -340,7 +309,7 @@ while (start == False):
     elif(value > 440):
         start = True
         RobotFinished = False
-        print("Drive Forward")
+        controller1.screen.print("Drive Forward")
         drivetrain.drive_for(FORWARD, 6, INCHES)
 
 # This makes sure that the robot is allowed to start
@@ -349,7 +318,7 @@ while(RobotFinished == False and start == True):
     # drivetrain drive forward for one y coordinate 
     forwardIsClear()
     drivetrain.set_drive_velocity(20, PERCENT)
-    print("started the next section")
+    controller1.screen.print("started the next section")
     # This is checking if the up button is pressed
     if controller1.buttonUp.pressing():
         print("manual code started")
@@ -365,6 +334,7 @@ while(RobotFinished == False and start == True):
         drivetrain.stop(BRAKE)
         RobotFinished = True
         start = False
+        vialChecker = True
         break
     elif(forwardClear == False):
             # the front of the robot is not clear 
@@ -455,22 +425,43 @@ while(RobotFinished == False and start == True):
         drivetrain.drive_for(FORWARD, 6, INCHES)
         coordinate_tracker()
 
+def vialDetection():
+    # This makes sure that when we are checking which vial to grab
+    #we take a picture of all of the availabe tags and sort through them
+    #in the next statement
+    while vialChecker == True:
+        aivisionsensor.tag_detection(True)
+        snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
+        value = distanceSensor.object_distance(MM)
+        drivetrain.set_drive_velocity(10, PERCENT)
+        if(value < 477):
+            #This is a for loop used to check every single april tag
+            #that was taken inside the picture for the vials
+            for obj in snapshot:                
+                #This will print to the screen the tag id of the tag that was detectedn
+                print("Tag detected: ", obj.id)
+                #This will check if the tag is id is 9 and then run
+                # the code to pick up the vial
+                if obj.id == 9:
+                    controller1.screen.print("correct vial detected with tag:", obj.id)
+                    print("correct vial detected with tag:", obj.id)
+                    drivetrain.drive_for(FORWARD, 0.5, INCHES)
+                    clawControl.spin_for(FORWARD, 70, DEGREES)
+                    wait(1,SECONDS)
+                    clawHeight.spin_for(FORWARD, 100, DEGREES)
+                    wait(1, SECONDS)
+                    drivetrain.drive_for(REVERSE, 5, INCHES)
+                    break
+                break
+            break
+        # This is the else statement that will run if the distance sensor
+        #is not close enough to the vials
+        elif(value > 477):
+            print("not ready to check")
+            drivetrain.drive_for(FORWARD, 2, INCHES)
 
 #Should work needs testing
-def waitForLever():
-    aivisionsensor.tag_detection(True)
-    snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
-    # This is a for loop used to check every single april tag id
-    # that was taken inside the picture for the vials
-    for obj in snapshot:
-        brain.screen.set_cursor(1, 1)
-        brain.screen.print("Tag detected: ", obj.id)
-        wait(0.5, SECONDS)
-        brain.screen.clear_screen()
-        # This will check if the tag is id is 5 and then run
-        if obj.id == 5:
-            clawControl.set_velocity(15, PERCENT)
-            clawControl.spin_for(REVERSE, 90, DEGREES)
+
 
 
 #function for dropping the vial in the
@@ -493,6 +484,7 @@ def dropOff():
             drivetrain.stop(BRAKE)
             if len(tubeColor) >= 1:
                 print("tube detected")
+                controller1.screen.print("tube detected")
                 clawHeight.spin_for(FORWARD, 160, DEGREES)
                 drivetrain.drive_for(FORWARD, 6.25, INCHES)
                 wait(1, SECONDS)
@@ -511,7 +503,23 @@ clawHeight.spin_for(FORWARD, 240, DEGREES)
 drivetrain.set_heading(0, DEGREES)
 dropOff()
 '''
+def waitForLever():
+    aivisionsensor.tag_detection(True)
+    snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
+    # This is a for loop used to check every single april tag id
+    # that was taken inside the picture for the vials
+    for obj in snapshot:
+        print("Tag detected: ", obj.id)
+        wait(0.5, SECONDS)
+        brain.screen.clear_screen()
+        # This will check if the tag is id is 5 and then run
+        if obj.id == 5:
+            print("correct lever signal detected with tag:", obj.id)
+            controller1.screen.print("correct lever signal with tag:", obj.id)
+            # this is the code that will run if the lever is detected
 
+
+            #CODE GOES HERE
 
 while manual == True:
     if controller1.buttonA.pressing():
