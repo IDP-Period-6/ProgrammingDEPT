@@ -7,7 +7,6 @@
 #                                                                              #
 # ---------------------------------------------------------------------------- #
 
-
 # press the region declarations to collapse it
 #region declarations
 
@@ -18,8 +17,8 @@ from vex import *
 brain=Brain()
 
 
-# define variables used for controlling motors based on controller inputs
-# automaticed generated code for 
+# define variables used for controlling drivetrain motors based on controller inputs
+# automaticed generated code for controller drivetrain
 controller1 = Controller(PRIMARY)
 drivetrain_l_needs_to_be_stopped_controller_1 = False
 drivetrain_r_needs_to_be_stopped_controller_1 = False
@@ -31,6 +30,7 @@ drivetrain_r_needs_to_be_stopped_controller_1 = False
 inertialSensor = Inertial(Ports.PORT4)
 inertialSensor.set_heading(0, DEGREES)
 inertialSensor.calibrate()
+# stops robot until inertial sensor is done callibrating
 while inertialSensor.is_calibrating():
     wait(100, MSEC)
 
@@ -48,7 +48,7 @@ leftMotor2.set_reversed(True)
 rightMotor1 = Motor(Ports.PORT1, GearSetting.RATIO_18_1,  )
 rightMotor2 = Motor(Ports.PORT2, GearSetting.RATIO_18_1,  )
 
-#claw heights controls are inversed
+# claw heights controls are inversed
 # This defines the ports to plug the arm motor into
 # so the brain can read the code involving the correct motors
 clawHeight1 = Motor(Ports.PORT6, GearSetting.RATIO_18_1, False)
@@ -126,7 +126,7 @@ def rc_auto_loop_function_controller_1():
             if drivetrain_right_side_speed < 5 and drivetrain_right_side_speed > -5:
                 # check if the right motor has already been stopped
                 if drivetrain_r_needs_to_be_stopped_controller_1:
-                    # stop the right drive motor
+                    # stop the right drive motor if it needs to be stopped
                     rightMotors.stop()
                     # tell the code that the right motor has been stopped
                     drivetrain_r_needs_to_be_stopped_controller_1 = False
@@ -178,7 +178,7 @@ def rc_auto_loop_function_controller_1():
                 # set the toggle so that we don't constantly tell the motor to stop when
                 # the buttons are released
                 controller_1_right_shoulder_control_motors_stopped = True
-        # wait before repeating the process
+        # wait 20 miliseconds before repeating the process
         wait(20, MSEC)
 
 # define variable for remote controller enable/disable
@@ -189,7 +189,7 @@ rc_auto_loop_thread_controller_1 = Thread(rc_auto_loop_function_controller_1)
 
 # ai vision sensor code
 # Allows us to get the purple color signature 
-#needed to insert the vial into the disemination chamber
+# needed to insert the vial into the tadisemination chamber
 purple = Colordesc(1, 214, 72, 219, 10, 0.2)
 aivisionsensor = AiVision(Ports.PORT20, AiVision.ALL_TAGS, purple)
 snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
@@ -210,8 +210,8 @@ value = distanceSensor.object_distance(INCHES)
 rightDistance = Distance(Ports.PORT3)
 rightValue = rightDistance.object_distance(INCHES)
 
-#This sets the left distance sensor to port 13 on the brain
-# this allows 
+# This sets the left distance sensor to port 13 on the brain
+# this allows the robot to read inputs on port 13
 leftDistance = Distance(Ports.PORT13)
 leftValue = leftDistance.object_distance(INCHES)
 
@@ -252,10 +252,19 @@ def forwardIsClear():
 #is enough safe space to the lefto the left of the robot for it to move left safely
 def leftIsClear():
     global leftClear
+    # This allows us to store the distance an object is detected from the 
+    # left distance sensor in inches into a variable to call for later
     leftValue = leftDistance.object_distance(INCHES)
+    #If the distance between the right distance sensor and
+    # an obstacle is more than 12 inches then it sets the
+    # right is clear to true to notify the robot it is
+    # safe to go there
     if (leftValue > 12):
         leftClear = True
-#this lets the robot use the left distance sensre
+    #If the distance between the left distance sensor and
+    # an obstacle is less than 12 inches than it sets
+    # the left is clear to false to notify the robot it
+    # is not safe to go there
     elif (leftValue < 12):
         leftClear = False
 
@@ -263,12 +272,17 @@ def leftIsClear():
 #is enough safe space to the left of the robot for it to move right safely
 def rightIsClear():
     global rightClear
-    # this is the distance sensor value on the right side of the robot
+    # This allows us to store the distance an object is detected from the
+    # right distance sensor in inches into a variable to call for later
     rightValue = rightDistance.object_distance(INCHES)
-    # this lets the robot use the distance sensor to check if the right is clear
+    # If the distance between the right distance sensor and an obstacle
+    # is more than 12 inches than it sets the right is clear to true to
+    # notify the robot that it is safe to move there
     if (rightValue > 12):
         rightClear = True
-    # this lets the robot know that the right is not clear
+    # If the distance between the right distance sensor and an obstacle
+    # is less than 12 inches then it sets the right is clear to false to
+    # notify the robot that it is not safe to move there
     elif(rightValue < 1):
         rightClear = False
 
@@ -294,10 +308,12 @@ def coordinate_tracker():
     elif robotAngle <= 260 or robotAngle >= 280:
         xCord -= 1
         print("1 was subtracted from the x-cord")
+    #The robot hasnt changed coordinates
     else:
         print("nothing ran")
         print("robot angle: ", robotAngle)
-    
+    #This is useed so we can see what coordinate the
+    #robot thinks it is on mostly used for testing
     print(xCord)
     print(yCord)
 
@@ -450,6 +466,7 @@ while(RobotFinished == False and start == True):
         forwardClear = True
         drivetrain.drive_for(FORWARD, 8, INCHES)
         coordinate_tracker()
+    break
 
 def vialDetection():
     # This makes sure that when we are checking which vial to grab
