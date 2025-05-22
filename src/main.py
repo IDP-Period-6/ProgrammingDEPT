@@ -50,13 +50,21 @@ rightMotor2 = Motor(Ports.PORT2, GearSetting.RATIO_18_1,  )
 #claw heights controls are inversed
 # This defines the ports to plug the motors into
 # so the brain can read the code involving the right motors
-clawHeight = Motor(Ports.PORT6, GearSetting.RATIO_18_1, False)
-clawHeight.set_velocity(100, PERCENT)
+clawHeight1 = Motor(Ports.PORT6, GearSetting.RATIO_18_1, False)
+clawHeight1.set_velocity(100, PERCENT)
 # This sets the claw height motor to be reversed
-clawHeight.set_stopping(BRAKE)
+clawHeight1.set_stopping(BRAKE)
 # This sets the claw height motor to be reversed
 
+clawHeight2 = Motor(Ports.PORT7, GearSetting.RATIO_18_1, True)
+clawHeight2.set_velocity(100, PERCENT)
+clawHeight2.set_stopping(BRAKE)
+
 clawControl = Motor(Ports.PORT15, GearSetting.RATIO_18_1)   
+clawControl.set_velocity(100, PERCENT)
+# This sets the claw control motor to be reversed
+clawControl.set_stopping(BRAKE)
+# This sets the claw control motor to be reversed
 
 # This groups all of the left motors into one group
 # and the right motors into one group to power the wheels
@@ -65,6 +73,8 @@ rightMotors = MotorGroup(rightMotor1, rightMotor2, )
 
 #This tells the brain/robot what components are being added to the robot
 drivetrain = SmartDrive(leftMotors, rightMotors, inertialSensor)
+
+drivetrain.set_drive_velocity(50, PERCENT)
 
 # define variables used for controlling motors based on controller inputs
 controller_1_left_shoulder_control_motors_stopped = True
@@ -132,15 +142,18 @@ def rc_auto_loop_function_controller_1():
             # to control clawHeight
             # Holding left bumper will raise the arm 
             if controller1.buttonL1.pressing():
-                clawHeight.spin(FORWARD)
+                clawHeight1.spin(FORWARD)
+                clawHeight2.spin(FORWARD)
                 controller_1_left_shoulder_control_motors_stopped = False
             # Holding the left trigger will lower the arm
             elif controller1.buttonL2.pressing():
-                clawHeight.spin(REVERSE)
+                clawHeight1.spin(REVERSE)
+                clawHeight2.spin(REVERSE)
                 controller_1_left_shoulder_control_motors_stopped = False
             # check if the left motor has already been stopped
             elif not controller_1_left_shoulder_control_motors_stopped:
-                clawHeight.stop()
+                clawHeight1.stop(BRAKE)
+                clawHeight2.stop(BRAKE)
                 # set the toggle so that we don't constantly tell the motor to stop when
                 # the buttons are released
                 controller_1_left_shoulder_control_motors_stopped = True
@@ -293,7 +306,8 @@ def coordinate_tracker():
 # 
 # 
 # # this is the claw control that we must start the entire autonomous routine with             
-clawHeight.spin_for(FORWARD, 240, DEGREES)
+clawHeight1.spin_for(FORWARD, 240, DEGREES)
+clawHeight2.spin_for(FORWARD, 240, DEGREES)
 clawControl.spin_for(REVERSE, 90, DEGREES)
 
 # 1 checks when to start the entire autonomous routine
@@ -305,11 +319,15 @@ while (start == False):
     # this lets the robot use the distance sensor to check if the front is clear
     if (value < 440): 
         controller1.screen.print("Don't Drive Forward")
+        wait(1, SECONDS)
+        controller1.screen.clear_screen()
     # this lets the robot know that the front is not clear
     elif(value > 440):
         start = True
         RobotFinished = False
         controller1.screen.print("Drive Forward")
+        wait(1, SECONDS)
+        controller1.screen.clear_screen()
         drivetrain.drive_for(FORWARD, 6, INCHES)
 
 # This makes sure that the robot is allowed to start
@@ -319,9 +337,11 @@ while(RobotFinished == False and start == True):
     forwardIsClear()
     drivetrain.set_drive_velocity(20, PERCENT)
     controller1.screen.print("started the next section")
+    wait(1, SECONDS)
+    controller1.screen.clear_screen()
     # This is checking if the up button is pressed
     if controller1.buttonUp.pressing():
-        print("manual code started")
+        controller1.screen.print("manual code started")
         manual = True
         # this is the manual code that allows the robot to be controlled
         break
@@ -448,7 +468,8 @@ def vialDetection():
                     drivetrain.drive_for(FORWARD, 0.5, INCHES)
                     clawControl.spin_for(FORWARD, 70, DEGREES)
                     wait(1,SECONDS)
-                    clawHeight.spin_for(FORWARD, 100, DEGREES)
+                    clawHeight1.spin_for(FORWARD, 100, DEGREES)
+                    clawHeight2.spin_for(FORWARD, 100, DEGREES)
                     wait(1, SECONDS)
                     drivetrain.drive_for(REVERSE, 5, INCHES)
                     break
@@ -485,11 +506,14 @@ def dropOff():
             if len(tubeColor) >= 1:
                 print("tube detected")
                 controller1.screen.print("tube detected")
-                clawHeight.spin_for(FORWARD, 160, DEGREES)
+                clawHeight1.spin_for(FORWARD, 160, DEGREES)
+                clawHeight2.spin_for(FORWARD, 160, DEGREES)
                 drivetrain.drive_for(FORWARD, 6.25, INCHES)
                 wait(1, SECONDS)
-                clawHeight.set_velocity(10, PERCENT)
-                clawHeight.spin_for(REVERSE, 60, DEGREES)
+                clawHeight1.set_velocity(10, PERCENT)
+                clawHeight2.set_velocity(10, PERCENT)
+                clawHeight1.spin_for(REVERSE, 60, DEGREES)
+                clawHeight2.spin_for(REVERSE, 60, DEGREES)
                 wait(1, SECONDS)
                 clawControl.spin_for(REVERSE, 60, DEGREES)
                 drivetrain.drive_for(REVERSE, 3, INCHES)
