@@ -32,24 +32,36 @@ inertialSensor.set_heading(0, DEGREES)
 inertialSensor.calibrate()
 while inertialSensor.is_calibrating():
     wait(100, MSEC)
+
 # drivetrain code
+# This defines the ports to plug the motors into
+# so the brain can read the code involving the left motors
 leftMotor1 = Motor(Ports.PORT11, GearSetting.RATIO_18_1,)
 leftMotor2 = Motor(Ports.PORT12, GearSetting.RATIO_18_1, )
 
+# This sets the left motors to be reversed
 leftMotor1.set_reversed(True)
 leftMotor2.set_reversed(True)
 
-
+# This defines the ports to plug the motors into
 rightMotor1 = Motor(Ports.PORT1, GearSetting.RATIO_18_1,  )
 rightMotor2 = Motor(Ports.PORT2, GearSetting.RATIO_18_1,  )
 
 #claw heights controls are inversed
+# This defines the ports to plug the motors into
+# so the brain can read the code involving the right motors
 clawHeight = Motor(Ports.PORT6, GearSetting.RATIO_18_1, False)
-clawControl = Motor(Ports.PORT15, GearSetting.RATIO_18_1)
+clawHeight.set_velocity(100, PERCENT)
+clawHeight.set_stopping(BRAKE)
 
+clawControl = Motor(Ports.PORT15, GearSetting.RATIO_18_1)   
+
+# This groups all of the left motors into one group
+# and the right motors into one group to power the wheels
 leftMotors = MotorGroup(leftMotor1, leftMotor2, )
 rightMotors = MotorGroup(rightMotor1, rightMotor2, )
 
+#This tells the brain/robot what components are being added to the robot
 drivetrain = SmartDrive(leftMotors, rightMotors, inertialSensor)
 
 # define variables used for controlling motors based on controller inputs
@@ -64,11 +76,14 @@ def rc_auto_loop_function_controller_1():
     # process the controller input every 20 milliseconds
     # update the motors based on the input values
     while True:
+        # check if the remote control code is enabled
         if remote_control_code_enabled:
             # stop the motors if the brain is calibrating
             if inertialSensor.is_calibrating():
                 leftMotors.stop()
                 rightMotors.stop()
+                # This stops the code while the inertial sensor
+                # is calibrating for 25 miliseconds
                 while inertialSensor.is_calibrating():
                     sleep(25, MSEC)
             
@@ -113,12 +128,15 @@ def rc_auto_loop_function_controller_1():
                 rightMotors.spin(FORWARD)
             # check the buttonL1/buttonL2 status
             # to control clawHeight
+            # Holding left bumper will raise the arm 
             if controller1.buttonL1.pressing():
                 clawHeight.spin(FORWARD)
                 controller_1_left_shoulder_control_motors_stopped = False
+            # Holding the left trigger will lower the arm
             elif controller1.buttonL2.pressing():
                 clawHeight.spin(REVERSE)
                 controller_1_left_shoulder_control_motors_stopped = False
+            # check if the left motor has already been stopped
             elif not controller_1_left_shoulder_control_motors_stopped:
                 clawHeight.stop()
                 # set the toggle so that we don't constantly tell the motor to stop when
@@ -126,12 +144,15 @@ def rc_auto_loop_function_controller_1():
                 controller_1_left_shoulder_control_motors_stopped = True
             # check the buttonR1/buttonR2 status
             # to control clawControl
+            # Holding the right bumper will open the claw
             if controller1.buttonR1.pressing():
                 clawControl.spin(FORWARD)
                 controller_1_right_shoulder_control_motors_stopped = False
+            # Holding the right trigger will close the claw
             elif controller1.buttonR2.pressing():
                 clawControl.spin(REVERSE)
                 controller_1_right_shoulder_control_motors_stopped = False
+            # check if the right motor has already been stopped
             elif not controller_1_right_shoulder_control_motors_stopped:
                 clawControl.stop()
                 # set the toggle so that we don't constantly tell the motor to stop when
@@ -150,7 +171,7 @@ rc_auto_loop_thread_controller_1 = Thread(rc_auto_loop_function_controller_1)
 # Allows us to get the purple color signature 
 #needed to insert the vial into the disemination chamber
 purple = Colordesc(1, 214, 72, 219, 10, 0.2)
-aivisionsensor = AiVision(Ports.PORT14, AiVision.ALL_TAGS, purple)
+aivisionsensor = AiVision(Ports.PORT20, AiVision.ALL_TAGS, purple)
 snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
 
 
@@ -164,9 +185,13 @@ snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
 distanceSensor = Distance(Ports.PORT5)
 value = distanceSensor.object_distance(INCHES)
 
+#This sets the right distance sensor to port 3 on the brain
+# this allows the robot to read the inputs on port 3
 rightDistance = Distance(Ports.PORT3)
 rightValue = rightDistance.object_distance(INCHES)
 
+#This sets the left distance sensor to port 13 on the brain
+# this allows 
 leftDistance = Distance(Ports.PORT13)
 leftValue = leftDistance.object_distance(INCHES)
 
@@ -174,7 +199,7 @@ leftValue = leftDistance.object_distance(INCHES)
 
         
 #global variables for running
-vialChecker = False
+vialChecker = True
 distanceChecker = False
 tubeChecker = False
 start = False 
@@ -185,7 +210,6 @@ leftClear = False
 rightClear = False
 RobotFinished = False
 leftOrRight = 1
-start = False
 
 #robot position coordinates
 xCord = 6 
@@ -197,9 +221,11 @@ yCord = 0
 def forwardIsClear():
     global forwardClear
     value = distanceSensor.object_distance(INCHES)
-    if(value > 10):
+    # this lets the robot use the distance sensor to check if the front is clear
+    if(value > 18):
         forwardClear = True
-    elif(value < 10):
+    # this lets the robot know that the front is not clear
+    elif(value < 18):
         forwardClear = False
 # This variable allows us and the robot to know whether there
 #is enough safe space to the lefto the left of the robot for it to move left safely
@@ -208,15 +234,20 @@ def leftIsClear():
     leftValue = leftDistance.object_distance(INCHES)
     if (leftValue > 10):
         leftClear = True
-    elif(leftValue < 10):
+#this lets the robot use the left distance sensre
+    elif (leftValue < 10):
         leftClear = False
+
 # This variable allows us and the robot to know whether there
 #is enough safe space to the left of the robot for it to move right safely
 def rightIsClear():
     global rightClear
+    # this is the distance sensor value on the right side of the robot
     rightValue = rightDistance.object_distance(INCHES)
+    # this lets the robot use the distance sensor to check if the right is clear
     if (rightValue > 10):
         rightClear = True
+    # this lets the robot know that the right is not clear
     elif(rightValue < 10):
         rightClear = False
 
@@ -224,23 +255,31 @@ def rightIsClear():
 def coordinate_tracker():
     global xCord
     global yCord
+    robotAngle = inertialSensor.heading()
     #robot moved up the field 1 in the y axis
-    if inertialSensor.heading() <= 10 and inertialSensor.heading() >= 350: 
+    if robotAngle <= 10 or robotAngle >= 350: 
         yCord += 1
+        print("y up by one")
     #robot moved to the left side of the field 1 in the x axis
-    elif inertialSensor.heading() <= 80 and inertialSensor.heading() >= 100:
+    elif robotAngle <= 80 or robotAngle >= 100:
         xCord += 1
+        print("1 was added to the x-cord")
     #robot moved down the field, -1 in the y axis
     # 1 in the y axis
-    elif inertialSensor.heading() <= 170 and inertialSensor.heading() >= 190:
+    elif robotAngle <= 170 or robotAngle >= 190:
+        print("y down by one")
         yCord -= 1
     #robot moved to the right side of the field, -1 in 
-    elif inertialSensor.heading() <= 260 and inertialSensor.heading() >= 280:
+    elif robotAngle <= 260 or robotAngle >= 280:
         xCord -= 1
+        print("1 was subtracted from the x-cord")
+    else:
+        print("nothing ran")
+        print("robot angle: ", robotAngle)
     print(xCord)
     print(yCord)
 
-drivetrain.set_drive_velocity(10, PERCENT)
+
 def vialDetection():
     # This makes sure that when we are checking which vial to grab
     #we take a picture of all of the availabe tags and sort through them
@@ -249,55 +288,73 @@ def vialDetection():
         aivisionsensor.tag_detection(True)
         snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
         value = distanceSensor.object_distance(MM)
-        print("hello")
+        drivetrain.set_drive_velocity(10, PERCENT)
         if(value < 477):
-            #This is a for loo used to check every single april tag
+            #This is a for loop used to check every single april tag
             #that was taken inside the picture for the vials
-            for obj in snapshot:
-                #This will print to the scree
+            for obj in snapshot:                
+                #This will print to the screen the tag id of the tag that was detectedn
                 print("Tag detected: ", obj.id)
+                #This will check if the tag is id is 9 and then run
+                # the code to pick up the vial
                 if obj.id == 9:
-                    drivetrain.drive_for(FORWARD, 2.5, INCHES)
-                    wait(1, SECONDS)
+                    drivetrain.drive_for(FORWARD, 0.5, INCHES)
                     clawControl.spin_for(FORWARD, 70, DEGREES)
                     wait(1,SECONDS)
                     clawHeight.spin_for(FORWARD, 100, DEGREES)
                     wait(1, SECONDS)
                     drivetrain.drive_for(REVERSE, 5, INCHES)
                     break
+                break
             break
+        # This is the else statement that will run if the distance sensor
+        #is not close enough to the vials
         elif(value > 477):
             print("not ready to check")
-            drivetrain.drive_for(FORWARD, 1, MM)
-        
+            drivetrain.drive_for(FORWARD, 2, INCHES)
+
         
 # set this as the height of the claw to stay at
-#clawHeight.spin_for(FORWARD, 255, DEGREES)
+#clawHeight.spin_for(FORWARD, 20, DEGREES)
 # this is the vial wideness
 #wait(1, SECONDS)
 #vialDetection()
-
-
-
-
+                    
+clawHeight.spin_for(FORWARD, 240, DEGREES)
+clawControl.spin_for(REVERSE, 90, DEGREES)
 # 1 checks when to start the entire autonomous routine
-while start == False:
-    value = distanceSensor.object_distance(INCHES)
-    clawHeight.spin_for(FORWARD, 240, DEGREES)
-    if (value < 10): 
-        print("Don't Drive Forward")
-    elif(value > 10):
+while (start == False):
+    value = distanceSensor.object_distance(MM)
+    print(value)
+    wait(1, SECONDS)
+    # this is the distance sensor value on the front side of the robot
+    # this lets the robot use the distance sensor to check if the front is clear
+    if (value < 440): 
+        controller1.screen.print("Don't Drive Forward")
+    # this lets the robot know that the front is not clear
+    elif(value > 440):
+        start = True
+        RobotFinished = False
         print("Drive Forward")
-        start = True		
+        drivetrain.drive_for(FORWARD, 6, INCHES)
 
-
+# This makes sure that the robot is allowed to start
+# the autonomous routine but has not finished yet
 while(RobotFinished == False and start == True):
     # drivetrain drive forward for one y coordinate 
     forwardIsClear()
     drivetrain.set_drive_velocity(20, PERCENT)
-    if (yCord == 20 and xCord == 4):
+    print("started the next section")
+    # This is checking if the up button is pressed
+    if controller1.buttonUp.pressing():
+        print("manual code started")
+        break
+    # This checks if the robot is in the finishing position
+    # this will stop the robot from moving
+    elif (yCord == 20 and xCord == 4):
         # if the coordinates of the robot are perfectly in front of the vials
         # then we can stop the robot
+        print("robot is in the right position")
         drivetrain.stop(BRAKE)
         RobotFinished = True
         start = False
@@ -312,12 +369,15 @@ while(RobotFinished == False and start == True):
                 # left side is not clear we must check the right side
                 print("left is not clear")
                 rightIsClear()
+                # called our function to check if right side is clear
                 if(rightClear == False):
                     # the right side is not clear so we just have to back up though this is very RARE!!!
                     print("not possible")
                     drivetrain.drive_for(REVERSE, 6, INCHES)
                     yCord -= 1
                     drivetrain.stop(BRAKE)
+                # this means that the right side is clear
+                # so we can turn to the right side
                 elif(rightClear == True):
                     # the right side is clear so we turn to the right side
                     print("right side is clear")
@@ -325,20 +385,28 @@ while(RobotFinished == False and start == True):
                     drivetrain.drive_for(FORWARD, 6, INCHES)
                     coordinate_tracker()
                     leftIsClear()
+                    # we are checking to see if the left side is clear
+                    # if the left side is clear, we are able to turn left and drive forward
                     if(leftClear == True):
                         # this means that the left AKA FRONT is clear
                         drivetrain.turn_to_heading(0, DEGREES)
                         drivetrain.drive_for(FORWARD, 6, INCHES)
                         coordinate_tracker()
+                    # this means that the left side is not clear
+                    # so we have to check if the front is clear
                     elif(leftClear == False):
                         # the front is not clear
                         forwardIsClear()
+                        # we are checking to see if the front side is clear
                         if(forwardClear == True):
                             drivetrain.drive_for(FORWARD, 6, INCHES)
                             coordinate_tracker()
+                        # this means that all the sides are not clear
                         elif(forwardClear == False):
                             # all sides are not clear
                             print("not possible")
+            # this means that the left side is clear
+            # so we can turn to the left side
             elif(leftClear == True):
                 # the left side is clear so we can turn left
                 print("left side is clear")
@@ -346,30 +414,32 @@ while(RobotFinished == False and start == True):
                 drivetrain.drive_for(FORWARD, 6, INCHES)
                 coordinate_tracker()
                 rightIsClear()
-                # we are checking to see if the right side is clear aka the FRONT SIDE
-                # if the front side is clear, we are able to face back forward
+                # we are checking to see if the right side is clear
                 if(rightClear == False):
                     # the right side is not clear
-                    print("right side aka FRONT is not clear")
+                    print("right side is not clear")
                     # now we have to check if the front is clear to continue driving forward
                     forwardIsClear()
                     if (forwardClear == True):
                         # if the front is clear we can drive forward again
-                        print("front side is clear AKA LEFT")
+                        print("front side is clear")
                         drivetrain.drive_for(FORWARD, 6, INCHES)                        
                         coordinate_tracker()
+                    # this means that the front side is not clear
                     elif (forwardClear == False):
-                        print("the LEFT side is NOT clear")
+                        print("the FRONT side is NOT clear")
                         # the forward is not clear
                         # so we have to back up
                         print("we are stuck")
                         drivetrain.stop(BRAKE)
+                # this means that the right side is clear
                 elif(rightClear == True):
                     # the right side is clear so we can turn back to the front
-                    print("the FRONT side is clear so we can start again")
+                    print("the RIGHT side is clear so we can start again")
                     drivetrain.turn_to_heading(0, DEGREES)
                     drivetrain.drive_for(FORWARD, 6, INCHES)
                     coordinate_tracker()
+    # this means that the front side is clear                
     elif(forwardClear == True):
         # the front of the robot is clear so we will continue driving forward
         print("clear")
@@ -377,18 +447,22 @@ while(RobotFinished == False and start == True):
         forwardClear = True
         drivetrain.drive_for(FORWARD, 6, INCHES)
         coordinate_tracker()
-        
+
+
 
 
 #Should work needs testing
 def waitForLever():
     aivisionsensor.tag_detection(True)
     snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
+    # This is a for loop used to check every single april tag id
+    # that was taken inside the picture for the vials
     for obj in snapshot:
         brain.screen.set_cursor(1, 1)
         brain.screen.print("Tag detected: ", obj.id)
         wait(0.5, SECONDS)
         brain.screen.clear_screen()
+        # This will check if the tag is id is 5 and then run
         if obj.id == 5:
             clawControl.set_velocity(15, PERCENT)
             clawControl.spin_for(REVERSE, 90, DEGREES)
@@ -408,6 +482,9 @@ def dropOff():
         tubeColor = aivisionsensor.take_snapshot(purple)
         value = distanceSensor.object_distance(MM)
         print(value)
+        # this is the distance sensor value on the front side of the robot
+        # this lets the robot use the distance sensor to check if it is close enough
+        # to the tube
         if (value < 600 and value > 590):
             drivetrain.stop(BRAKE)
             if len(tubeColor) >= 1:
