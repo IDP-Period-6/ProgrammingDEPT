@@ -269,7 +269,7 @@ def leftIsClear():
         leftClear = False
 
 # This variable allows us and the robot to know whether there
-#is enough safe space to the left of the robot for it to move right safely
+#is enough safe space to the left rof the robot for it to move right safely
 def rightIsClear():
     global rightClear
     # This allows us to store the distance an object is detected from the
@@ -332,6 +332,44 @@ clawHeight1.spin_for(FORWARD, 240, DEGREES)
 clawHeight2.spin_for(FORWARD, 240, DEGREES)
 clawControl.spin_for(REVERSE, 90, DEGREES)
 
+
+def vialDetection():
+    # This makes sure that when we are checking which vial to grab
+    #we take a picture of all of the availabe tags and sort through them
+    #in the next statement
+    while vialChecker == True:
+        aivisionsensor.tag_detection(True)
+        snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
+        value = distanceSensor.object_distance(MM)
+        drivetrain.set_drive_velocity(10, PERCENT)
+        if(value < 477):
+            #This is a for loop used to check every single april tag
+            #that was taken inside the picture for the vials
+            for obj in snapshot:                
+                #This will print to the screen the tag id of the tag that was detectedn
+                print("Tag detected: ", obj.id)
+                #This will check if the tag is id is 9 and then run
+                # the code to pick up the vial
+                if obj.id == 9:
+                    controller1.screen.print("correct vial detected with tag:", obj.id)
+                    print("correct vial detected with tag:", obj.id)
+                    drivetrain.drive_for(FORWARD, 0.5, INCHES)
+                    clawControl.spin_for(FORWARD, 70, DEGREES)
+                    wait(1,SECONDS)
+                    clawHeight1.spin_for(FORWARD, 100, DEGREES)
+                    clawHeight2.spin_for(FORWARD, 100, DEGREES)
+                    wait(1, SECONDS)
+                    drivetrain.drive_for(REVERSE, 5, INCHES)
+                    break
+                break
+            break
+        # This is the else statement that will run if the distance sensor is not close enough to the vials
+        elif(value > 477):
+            print("not ready to check")
+            drivetrain.drive_for(FORWARD, 2, INCHES)
+
+
+
 # 1 checks when to start the entire autonomous routine
 while (start == False):
     value = distanceSensor.object_distance(MM)
@@ -369,7 +407,8 @@ while(RobotFinished == False and start == True):
         break
     # This checks if the robot is in the finishing position
     # this will stop the robot from moving
-    elif (yCord == 20 and xCord == 4):
+    elif (yCord == 20 and xCord == 4) or controller1.buttonB.pressing():
+        # this is the distance sensor value on the front side of the robot:
         # if the coordinates of the robot are perfectly in front of the vials
         # then we can stop the robot
         print("robot is in the right position")
@@ -377,6 +416,7 @@ while(RobotFinished == False and start == True):
         RobotFinished = True
         start = False
         vialChecker = True
+        vialDetection()
         break
     elif(forwardClear == False):
             # the front of the robot is not clear 
@@ -468,40 +508,7 @@ while(RobotFinished == False and start == True):
         coordinate_tracker()
     break
 
-def vialDetection():
-    # This makes sure that when we are checking which vial to grab
-    #we take a picture of all of the availabe tags and sort through them
-    #in the next statement
-    while vialChecker == True:
-        aivisionsensor.tag_detection(True)
-        snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
-        value = distanceSensor.object_distance(MM)
-        drivetrain.set_drive_velocity(10, PERCENT)
-        if(value < 477):
-            #This is a for loop used to check every single april tag
-            #that was taken inside the picture for the vials
-            for obj in snapshot:                
-                #This will print to the screen the tag id of the tag that was detectedn
-                print("Tag detected: ", obj.id)
-                #This will check if the tag is id is 9 and then run
-                # the code to pick up the vial
-                if obj.id == 9:
-                    controller1.screen.print("correct vial detected with tag:", obj.id)
-                    print("correct vial detected with tag:", obj.id)
-                    drivetrain.drive_for(FORWARD, 0.5, INCHES)
-                    clawControl.spin_for(FORWARD, 70, DEGREES)
-                    wait(1,SECONDS)
-                    clawHeight1.spin_for(FORWARD, 100, DEGREES)
-                    clawHeight2.spin_for(FORWARD, 100, DEGREES)
-                    wait(1, SECONDS)
-                    drivetrain.drive_for(REVERSE, 5, INCHES)
-                    break
-                break
-            break
-        # This is the else statement that will run if the distance sensor is not close enough to the vials
-        elif(value > 477):
-            print("not ready to check")
-            drivetrain.drive_for(FORWARD, 2, INCHES)
+
 
 #Should work needs testing
 #function for dropping the vial in the
@@ -548,6 +555,7 @@ def dropOff():
 #clawHeight.spi#n_for(FORWARD, 240, DEGREES)
 #drivetrain.set#drivetrain.set_heading(0, DEGREES
 #dropOff()
+
 while manual == True:
     if controller1.buttonA.pressing():
         # this is the manual code that allows the robot to be controlled
@@ -562,7 +570,7 @@ while manual == True:
             # the code to pick up the vial
             if obj.id == 9:
                 controller1.screen.print("correct vial detected with tag:", obj.id)
-    elif controller1.buttonB.pressing():
+    elif controller1.buttonY.pressing():
         # this is the manual code that allows the robot to be controlled
         print("manaual tube detection")
         # This makes sure that when we are checking which vial to grab
@@ -582,5 +590,16 @@ while manual == True:
             if obj.id == 5:
                 print("correct lever signal detected with tag:", obj.id)
                 controller1.screen.print("correct lever signal with tag:", obj.id)
-                
+    elif controller1.buttonLeft.pressing():
+        clawHeight1.spin_for(FORWARD, 240, DEGREES)
+        clawHeight2.spin_for(FORWARD, 240, DEGREES)
+        print("claw height up")
+    elif controller1.buttonRight.pressing():
+        clawHeight1.spin_for(FORWARD, 400, DEGREES)
+        clawHeight2.spin_for(FORWARD, 400, DEGREES)
+        print("claw height vial")
+    elif controller1.buttonDown.pressing():
+        clawHeight1.spin_for(REVERSE, 240, DEGREES)
+        clawHeight2.spin_for(REVERSE, 240, DEGREES)
+        print("claw height down")
                     
