@@ -19,6 +19,7 @@ brain=Brain()
 
 
 # define variables used for controlling motors based on controller inputs
+# automaticed generated code for 
 controller1 = Controller(PRIMARY)
 drivetrain_l_needs_to_be_stopped_controller_1 = False
 drivetrain_r_needs_to_be_stopped_controller_1 = False
@@ -48,23 +49,26 @@ rightMotor1 = Motor(Ports.PORT1, GearSetting.RATIO_18_1,  )
 rightMotor2 = Motor(Ports.PORT2, GearSetting.RATIO_18_1,  )
 
 #claw heights controls are inversed
-# This defines the ports to plug the motors into
-# so the brain can read the code involving the right motors
+# This defines the ports to plug the arm motor into
+# so the brain can read the code involving the correct motors
 clawHeight1 = Motor(Ports.PORT6, GearSetting.RATIO_18_1, False)
 clawHeight1.set_velocity(100, PERCENT)
-# This sets the claw height motor to be reversed
 clawHeight1.set_stopping(BRAKE)
-# This sets the claw height motor to be reversed
 
+# This sets the claw height motor to be reversed as well as
+# making its speed as fast as it can
 clawHeight2 = Motor(Ports.PORT7, GearSetting.RATIO_18_1, True)
 clawHeight2.set_velocity(100, PERCENT)
 clawHeight2.set_stopping(BRAKE)
 
-clawControl = Motor(Ports.PORT15, GearSetting.RATIO_18_1)   
+#This tells the robot which port the motor is plugged into
+# and the gear ratio used to control the claw
+clawControl = Motor(Ports.PORT15, GearSetting.RATIO_18_1)
+#This makes the claw move as fast as it can   
 clawControl.set_velocity(100, PERCENT)
-# This sets the claw control motor to be reversed
+# This sets the claw control motor to be in brake mode
+# everytime there is no input for the claw
 clawControl.set_stopping(BRAKE)
-# This sets the claw control motor to be reversed
 
 # This groups all of the left motors into one group
 # and the right motors into one group to power the wheels
@@ -74,6 +78,7 @@ rightMotors = MotorGroup(rightMotor1, rightMotor2, )
 #This tells the brain/robot what components are being added to the robot
 drivetrain = SmartDrive(leftMotors, rightMotors, inertialSensor)
 
+#This sets the robots speed to half of its max speed
 drivetrain.set_drive_velocity(50, PERCENT)
 
 # define variables used for controlling motors based on controller inputs
@@ -102,14 +107,14 @@ def rc_auto_loop_function_controller_1():
             # calculate the drivetrain motor velocities from the controller joystick axies
             # left = axis3 + axis1
             # right = axis3 - axis1
-            drivetrain_left_side_speed = controller1.axis3.position() + controller1.axis1.position()
-            drivetrain_right_side_speed = controller1.axis3.position() - controller1.axis1.position()
+            drivetrain_left_side_speed = (controller1.axis3.position() + controller1.axis1.position())/3
+            drivetrain_right_side_speed = (controller1.axis3.position() - controller1.axis1.position())/3
             
             # check if the value is inside of the deadband range
             if drivetrain_left_side_speed < 5 and drivetrain_left_side_speed > -5:
                 # check if the left motor has already been stopped
                 if drivetrain_l_needs_to_be_stopped_controller_1:
-                    # stop the left drive motor
+                    # stop the left drive motor if it needs to be stopped
                     leftMotors.stop()
                     # tell the code that the left motor has been stopped
                     drivetrain_l_needs_to_be_stopped_controller_1 = False
@@ -248,10 +253,10 @@ def forwardIsClear():
 def leftIsClear():
     global leftClear
     leftValue = leftDistance.object_distance(INCHES)
-    if (leftValue > 10):
+    if (leftValue > 12):
         leftClear = True
 #this lets the robot use the left distance sensre
-    elif (leftValue < 10):
+    elif (leftValue < 12):
         leftClear = False
 
 # This variable allows us and the robot to know whether there
@@ -261,10 +266,10 @@ def rightIsClear():
     # this is the distance sensor value on the right side of the robot
     rightValue = rightDistance.object_distance(INCHES)
     # this lets the robot use the distance sensor to check if the right is clear
-    if (rightValue > 10):
+    if (rightValue > 12):
         rightClear = True
     # this lets the robot know that the right is not clear
-    elif(rightValue < 10):
+    elif(rightValue < 1):
         rightClear = False
 
 #keeps track of robot's current position on field using coordinates (x and y)
@@ -292,8 +297,9 @@ def coordinate_tracker():
     else:
         print("nothing ran")
         print("robot angle: ", robotAngle)
-    brain.screen.print(xCord)
-    brain.screen.print(yCord)
+    
+    print(xCord)
+    print(yCord)
 
 
 
@@ -370,7 +376,7 @@ while(RobotFinished == False and start == True):
                 if(rightClear == False):
                     # the right side is not clear so we just have to back up though this is very RARE!!!
                     print("not possible")
-                    drivetrain.drive_for(REVERSE, 6, INCHES)
+                    drivetrain.drive_for(REVERSE, 8, INCHES)
                     yCord -= 1
                     drivetrain.stop(BRAKE)
                 # this means that the right side is clear
@@ -379,7 +385,7 @@ while(RobotFinished == False and start == True):
                     # the right side is clear so we turn to the right side
                     print("right side is clear")
                     drivetrain.turn_to_heading(90, DEGREES)
-                    drivetrain.drive_for(FORWARD, 6, INCHES)
+                    drivetrain.drive_for(FORWARD, 8, INCHES)
                     coordinate_tracker()
                     leftIsClear()
                     # we are checking to see if the left side is clear
@@ -387,7 +393,7 @@ while(RobotFinished == False and start == True):
                     if(leftClear == True):
                         # this means that the left AKA FRONT is clear
                         drivetrain.turn_to_heading(0, DEGREES)
-                        drivetrain.drive_for(FORWARD, 6, INCHES)
+                        drivetrain.drive_for(FORWARD, 8, INCHES)
                         coordinate_tracker()
                     # this means that the left side is not clear
                     # so we have to check if the front is clear
@@ -396,7 +402,7 @@ while(RobotFinished == False and start == True):
                         forwardIsClear()
                         # we are checking to see if the front side is clear
                         if(forwardClear == True):
-                            drivetrain.drive_for(FORWARD, 6, INCHES)
+                            drivetrain.drive_for(FORWARD, 8, INCHES)
                             coordinate_tracker()
                         # this means that all the sides are not clear
                         elif(forwardClear == False):
@@ -408,7 +414,7 @@ while(RobotFinished == False and start == True):
                 # the left side is clear so we can turn left
                 print("left side is clear")
                 drivetrain.turn_to_heading(-90, DEGREES)
-                drivetrain.drive_for(FORWARD, 6, INCHES)
+                drivetrain.drive_for(FORWARD, 8, INCHES)
                 coordinate_tracker()
                 rightIsClear()
                 # we are checking to see if the right side is clear
@@ -420,7 +426,7 @@ while(RobotFinished == False and start == True):
                     if (forwardClear == True):
                         # if the front is clear we can drive forward again
                         print("front side is clear")
-                        drivetrain.drive_for(FORWARD, 6, INCHES)                        
+                        drivetrain.drive_for(FORWARD, 8, INCHES)                        
                         coordinate_tracker()
                     # this means that the front side is not clear
                     elif (forwardClear == False):
@@ -434,7 +440,7 @@ while(RobotFinished == False and start == True):
                     # the right side is clear so we can turn back to the front
                     print("the RIGHT side is clear so we can start again")
                     drivetrain.turn_to_heading(0, DEGREES)
-                    drivetrain.drive_for(FORWARD, 6, INCHES)
+                    drivetrain.drive_for(FORWARD, 8, INCHES)
                     coordinate_tracker()
     # this means that the front side is clear                
     elif(forwardClear == True):
@@ -442,7 +448,7 @@ while(RobotFinished == False and start == True):
         print("clear")
         wait(1, SECONDS)
         forwardClear = True
-        drivetrain.drive_for(FORWARD, 6, INCHES)
+        drivetrain.drive_for(FORWARD, 8, INCHES)
         coordinate_tracker()
 
 def vialDetection():
@@ -475,19 +481,15 @@ def vialDetection():
                     break
                 break
             break
-        # This is the else statement that will run if the distance sensor
-        #is not close enough to the vials
+        # This is the else statement that will run if the distance sensor is not close enough to the vials
         elif(value > 477):
             print("not ready to check")
             drivetrain.drive_for(FORWARD, 2, INCHES)
 
 #Should work needs testing
-
-
-
 #function for dropping the vial in the
 def dropOff():
-    # we use the start_awb in order to clear the whiteness in the ai vision sensor 
+    # we use the start_awb in order to cancel out the yellowness with whiteness in the ai vision sensor 
     # this balances the color and prevents extra yellowing
     aivisionsensor.start_awb()
     # this entire while loop inside of the drop off function
@@ -502,9 +504,10 @@ def dropOff():
         # this lets the robot use the distance sensor to check if it is close enough
         # to the tube
         if (value < 600 and value > 590):
-            drivetrain.stop(BRAKE)
+            #the robot's distance sensor will detect the distance between it and the wall and will stop drivetrain.stop(BRAKE)
             if len(tubeColor) >= 1:
-                print("tube detected")
+            
+                #the if statement will run if purple color is detected by the AI vision sensor    print("tube detected")
                 controller1.screen.print("tube detected")
                 clawHeight1.spin_for(FORWARD, 160, DEGREES)
                 clawHeight2.spin_for(FORWARD, 160, DEGREES)
@@ -518,33 +521,16 @@ def dropOff():
                 clawControl.spin_for(REVERSE, 60, DEGREES)
                 drivetrain.drive_for(REVERSE, 3, INCHES)
         elif(value > 600):
-            drivetrain.drive(FORWARD)
+            break
+            #if the distance sensor doesn't detect a wall in 600 mm then the robot will continue drivingdrivetrain.drive(FORWARD)
 
 
-'''''
-clawControl.spin_for(FORWARD, 75, DEGREES)
-clawHeight.spin_for(FORWARD, 240, DEGREES)
-drivetrain.set_heading(0, DEGREES)
-dropOff()
-'''
-def waitForLever():
-    aivisionsensor.tag_detection(True)
-    snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
-    # This is a for loop used to check every single april tag id
-    # that was taken inside the picture for the vials
-    for obj in snapshot:
-        print("Tag detected: ", obj.id)
-        wait(0.5, SECONDS)
-        brain.screen.clear_screen()
-        # This will check if the tag is id is 5 and then run
-        if obj.id == 5:
-            print("correct lever signal detected with tag:", obj.id)
-            controller1.screen.print("correct lever signal with tag:", obj.id)
-            # this is the code that will run if the lever is detected
 
-
-            #CODE GOES HERE
-
+#this is code that will run if the vial is there and we need to drop it off in the dissemination chamber
+#clawControl.sp#in_for(FORWARD, 75, DEGREES)
+#clawHeight.spi#n_for(FORWARD, 240, DEGREES)
+#drivetrain.set#drivetrain.set_heading(0, DEGREES
+#dropOff()
 while manual == True:
     if controller1.buttonA.pressing():
         # this is the manual code that allows the robot to be controlled
@@ -566,8 +552,9 @@ while manual == True:
         aivisionsensor.color_detection(True)
         tubeColor = aivisionsensor.take_snapshot(purple)
         if len(tubeColor) >= 1:
-                print("tube detected and it is purple!")
-                controller1.screen.print("tube detected and it is purple!")
+            #if statement will run the AI vision sensor detects the color purple   
+            print("tube detected and it is purple!")
+            controller1.screen.print("tube detected and it is purple!")
     elif controller1.buttonX.pressing():
         print("manual lever april tag detection")
         aivisionsensor.tag_detection(True)
