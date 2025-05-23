@@ -15,6 +15,7 @@ from vex import *
 
 # Brain should be defined by default
 brain=Brain()
+brain.screen.set_font(FontType.MONO20)
 
 
 # define variables used for controlling drivetrain motors based on controller inputs
@@ -27,6 +28,7 @@ drivetrain_r_needs_to_be_stopped_controller_1 = False
 
 # inertial sensor code
 # Allows us to get headings and turn accurately
+# We are also calibrating when the robot starts
 inertialSensor = Inertial(Ports.PORT4)
 inertialSensor.set_heading(0, DEGREES)
 inertialSensor.calibrate()
@@ -44,7 +46,8 @@ leftMotor2 = Motor(Ports.PORT12, GearSetting.RATIO_18_1, )
 leftMotor1.set_reversed(True)
 leftMotor2.set_reversed(True)
 
-# This defines the ports to plug the motors into
+# This defines the ports to plug the motors into and
+# also tells the brain/robot the gear ratio
 rightMotor1 = Motor(Ports.PORT1, GearSetting.RATIO_18_1,  )
 rightMotor2 = Motor(Ports.PORT2, GearSetting.RATIO_18_1,  )
 
@@ -52,13 +55,17 @@ rightMotor2 = Motor(Ports.PORT2, GearSetting.RATIO_18_1,  )
 # This defines the ports to plug the arm motor into
 # so the brain can read the code involving the correct motors
 clawHeight1 = Motor(Ports.PORT6, GearSetting.RATIO_18_1, False)
+# Moves the arm at max speed
 clawHeight1.set_velocity(100, PERCENT)
+# When the arm has no input it will brake
 clawHeight1.set_stopping(BRAKE)
 
 # This sets the claw height motor to be reversed as well as
 # making its speed as fast as it can
 clawHeight2 = Motor(Ports.PORT7, GearSetting.RATIO_18_1, True)
+# Moves the arm at max speed
 clawHeight2.set_velocity(100, PERCENT)
+# When the arm has no inputs it will brake
 clawHeight2.set_stopping(BRAKE)
 
 #This tells the robot which port the motor is plugged into
@@ -288,6 +295,8 @@ def rightIsClear():
 
 #keeps track of robot's current position on field using coordinates (x and y)
 def coordinate_tracker():
+    brain.screen.clear_row(1)
+    brain.screen.set_cursor(1, 1)
     global xCord
     global yCord
     robotAngle = inertialSensor.heading()
@@ -295,27 +304,35 @@ def coordinate_tracker():
     if robotAngle <= 10 or robotAngle >= 350: 
         yCord += 1
         print("y up by one")
+        brain.screen.print("y up by one")
     #robot moved to the left side of the field 1 in the x axis
     elif robotAngle <= 80 or robotAngle >= 100:
         xCord += 1
         print("1 was added to the x-cord")
+        brain.screen.print("1 was added to the x-cord")
     #robot moved down the field, -1 in the y axis
     # 1 in the y axis
     elif robotAngle <= 170 or robotAngle >= 190:
         print("y down by one")
+        brain.screen.print("y down by one")
         yCord -= 1
     #robot moved to the right side of the field, -1 in 
     elif robotAngle <= 260 or robotAngle >= 280:
         xCord -= 1
         print("1 was subtracted from the x-cord")
+        brain.screen.print("1 was subtracted from the x-cord")
     #The robot hasnt changed coordinates
     else:
         print("nothing ran")
+        brain.screen.print("nothing ran")
         print("robot angle: ", robotAngle)
+        brain.screen.print("robot angle")
     #This is useed so we can see what coordinate the
     #robot thinks it is on mostly used for testing
     print(xCord)
+    brain.screen.print(xCord)
     print(yCord)
+    brain.screen.print(yCord)
 
 
 
@@ -337,6 +354,8 @@ def vialDetection():
     # This makes sure that when we are checking which vial to grab
     #we take a picture of all of the availabe tags and sort through them
     #in the next statement
+    brain.screen.clear_row(2)
+    brain.screen.set_cursor(2, 1)
     while vialChecker == True:
         aivisionsensor.tag_detection(True)
         snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
@@ -348,11 +367,13 @@ def vialDetection():
             for obj in snapshot:                
                 #This will print to the screen the tag id of the tag that was detectedn
                 print("Tag detected: ", obj.id)
-                #This will check if the tag is id is 9 and then run
+                brain.screen.print("Tag detected")
+                #This will check if the tag is id is 8 and then run
                 # the code to pick up the vial
-                if obj.id == 9:
+                if obj.id == 8:
                     controller1.screen.print("correct vial detected with tag:", obj.id)
                     print("correct vial detected with tag:", obj.id)
+                    brain.screen.print("correct vial detected with tag:")
                     drivetrain.drive_for(FORWARD, 0.5, INCHES)
                     clawControl.spin_for(FORWARD, 70, DEGREES)
                     wait(1,SECONDS)
@@ -366,19 +387,24 @@ def vialDetection():
         # This is the else statement that will run if the distance sensor is not close enough to the vials
         elif(value > 477):
             print("not ready to check")
+            brain.screen.print("not ready to check")
             drivetrain.drive_for(FORWARD, 2, INCHES)
 
 
 
 # 1 checks when to start the entire autonomous routine
 while (start == False):
+    brain.screen.clear_row(3)
+    brain.screen.set_cursor(3, 1)
     value = distanceSensor.object_distance(MM)
     print(value)
+    brain.screen.print(value)
     wait(1, SECONDS)
     # this is the distance sensor value on the front side of the robot
     # this lets the robot use the distance sensor to check if the front is clear
     if (value < 440): 
         controller1.screen.print("Don't Drive Forward")
+        brain.screen.print("Don't Drive Forward")
         wait(1, SECONDS)
         controller1.screen.clear_screen()
     # this lets the robot know that the front is not clear
@@ -386,6 +412,7 @@ while (start == False):
         start = True
         RobotFinished = False
         controller1.screen.print("Drive Forward")
+        brain.screen.print("Drive Forward") 
         wait(1, SECONDS)
         controller1.screen.clear_screen()
         drivetrain.drive_for(FORWARD, 6, INCHES)
@@ -394,14 +421,19 @@ while (start == False):
 # the autonomous routine but has not finished yet
 while(RobotFinished == False and start == True):
     # drivetrain drive forward for one y coordinate 
+    brain.screen.clear_row(4)
+    brain.screen.set_cursor(4, 1)
     forwardIsClear()
     drivetrain.set_drive_velocity(20, PERCENT)
     controller1.screen.print("started the next section")
+    brain.screen.print("started the next section")
     wait(1, SECONDS)
     controller1.screen.clear_screen()
-    # This is checking if the up button is pressed
+    # This is checking if the up button is pressed and then will
+    # allow us to start manual mode
     if controller1.buttonUp.pressing():
         controller1.screen.print("manual code started")
+        brain.screen.print("manual code started")
         manual = True
         # this is the manual code that allows the robot to be controlled
         break
@@ -412,6 +444,7 @@ while(RobotFinished == False and start == True):
         # if the coordinates of the robot are perfectly in front of the vials
         # then we can stop the robot
         print("robot is in the right position")
+        brain.screen.print("robot is in the right position")
         drivetrain.stop(BRAKE)
         RobotFinished = True
         start = False
@@ -422,16 +455,19 @@ while(RobotFinished == False and start == True):
             # the front of the robot is not clear 
             # we must check the left side first then the right side
             print("forward is not clear")
+            brain.screen.print("forward is not clear")
             leftIsClear()
             # called our function to check if left side is clear
             if (leftClear == False):
                 # left side is not clear we must check the right side
                 print("left is not clear")
+                brain.screen.print("left is not clear")
                 rightIsClear()
                 # called our function to check if right side is clear
                 if(rightClear == False):
                     # the right side is not clear so we just have to back up though this is very RARE!!!
                     print("not possible")
+                    brain.screen.print("not possible")
                     drivetrain.drive_for(REVERSE, 8, INCHES)
                     yCord -= 1
                     drivetrain.stop(BRAKE)
@@ -440,6 +476,7 @@ while(RobotFinished == False and start == True):
                 elif(rightClear == True):
                     # the right side is clear so we turn to the right side
                     print("right side is clear")
+                    brain.screen.print("right side is clear")
                     drivetrain.turn_to_heading(90, DEGREES)
                     drivetrain.drive_for(FORWARD, 8, INCHES)
                     coordinate_tracker()
@@ -469,6 +506,7 @@ while(RobotFinished == False and start == True):
             elif(leftClear == True):
                 # the left side is clear so we can turn left
                 print("left side is clear")
+                brain.screen.print("left side is clear")
                 drivetrain.turn_to_heading(-90, DEGREES)
                 drivetrain.drive_for(FORWARD, 8, INCHES)
                 coordinate_tracker()
@@ -477,6 +515,7 @@ while(RobotFinished == False and start == True):
                 if(rightClear == False):
                     # the right side is not clear
                     print("right side is not clear")
+                    brain.screen.print("right side iin not clear")
                     # now we have to check if the front is clear to continue driving forward
                     forwardIsClear()
                     if (forwardClear == True):
@@ -557,22 +596,32 @@ def dropOff():
 #dropOff()
 
 while manual == True:
+    # This is the manual code to raise the arm and control it
+    # to correctly obtain the vial
     if controller1.buttonA.pressing():
         # this is the manual code that allows the robot to be controlled
         print("manaual vial detection")
+        # Controller will rumble as a signal that we have entered 
+        # manual code
+        controller1.rumble("..")
         # This makes sure that when we are checking which vial to grab
         aivisionsensor.tag_detection(True)
+        # This makes sure that when the robot scans the april tags using a photo
+        # it takes into account all the tags that are there
         snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
+        # For every april tag in the snapshot it will sort through their
+        
         for obj in snapshot:                
             #This will print to the screen the tag id of the tag that was detectedn
             controller1.screen.print("Tag detected: ", obj.id)
             #This will check if the tag is id is 9 and then run
             # the code to pick up the vial
-            if obj.id == 9:
+            if obj.id == 8:
                 controller1.screen.print("correct vial detected with tag:", obj.id)
     elif controller1.buttonY.pressing():
         # this is the manual code that allows the robot to be controlled
         print("manaual tube detection")
+        controller1.rumble("..")
         # This makes sure that when we are checking which vial to grab
         aivisionsensor.color_detection(True)
         tubeColor = aivisionsensor.take_snapshot(purple)
