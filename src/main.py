@@ -226,10 +226,11 @@ leftValue = leftDistance.object_distance(INCHES)
 
         
 #global variables for running
-vialChecker = False
+vialChecker = True
 distanceChecker = False
 tubeChecker = False
 start = False 
+manual = False
 
 # actually used variables
 forwardClear = False
@@ -239,12 +240,13 @@ RobotFinished = True
 leftOrRight = 1
 
 #robot position coordinates
-xCord = 6 
+xCord = 1 
 yCord = 0
 
 # This variable is set to true if space infront of the robot is clear
 # This variable allows us and the robot to know whether there
-#is enough safe space infront of the robot for it to move forward safely
+#is enough safe space inf
+# ront of the robot for it to move forward safely
 def forwardIsClear():
     global forwardClear
     value = distanceSensor.object_distance(INCHES)
@@ -345,8 +347,7 @@ def coordinate_tracker():
 # 
 # # this is the claw control that we must start the entire autonomous routine with             
 clawHeight1.spin_for(FORWARD, 240, DEGREES)
-clawHeight2.spin_for(FORWARD, 240, DEGREES)
-clawControl.spin_for(REVERSE, 90, DEGREES)
+#clawControl.spin_for(REVERSE, 90, DEGREES)
 
 
 def vialDetection():
@@ -355,7 +356,7 @@ def vialDetection():
     #in the next statement
     brain.screen.clear_row(2)
     brain.screen.set_cursor(2, 1)
-    while vialChecker == True:
+    while vialChecker == False:
         aivisionsensor.tag_detection(True)
         snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
         value = distanceSensor.object_distance(MM)
@@ -390,9 +391,20 @@ def vialDetection():
             drivetrain.drive_for(FORWARD, 2, INCHES)
 
 
+        aivisionsensor.tag_detection(True)
+        snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
+        value = distanceSensor.object_distance(MM)
+        drivetrain.set_drive_velocity(10, PERCENT)
+            #This is a for loop used to check every single april tag
+            #that was taken inside the picture for the vials
+        for obj in snapshot:                
+                #This will print to the screen the tag id of the tag that was detectedn
+            print("Tag detected: ", obj.id)
+            brain.screen.print("Tag detected")
 
+'''
 # 1 checks when to start the entire autonomous routine
-while (start == False):
+while (start == True):
     brain.screen.clear_row(3)
     brain.screen.set_cursor(3, 1)
     value = distanceSensor.object_distance(MM)
@@ -415,10 +427,77 @@ while (start == False):
         wait(1, SECONDS)
         controller1.screen.clear_screen()
         drivetrain.drive_for(FORWARD, 6, INCHES)
+'''
+
+
+
+
+#Should work needs testing
+#function for dropping the vial in the
+def dropOff():
+    # we use the start_awb in order to cancel out the yellowness with whiteness in the ai vision sensor 
+    # this balances the color and prevents extra yellowing
+    aivisionsensor.start_awb()
+    # this entire while loop inside of the drop off function
+    # only starts when the variable is set true so it doesn't function
+    # until the variable is set true
+    while tubeChecker == False:
+        aivisionsensor.color_detection(True)
+        tubeColor = aivisionsensor.take_snapshot(purple)
+        value = distanceSensor.object_distance(MM)
+        print(value)
+        # this is the distance sensor value on the front side of the robot
+        # this lets the robot use the distance sensor to check if it is close enough
+        # to the tube
+        if (value < 600 and value > 590):
+            #the robot's dpistance sensor will detect the distance between it and the wall and will stop drivetrain.stop(BRAKE)
+            if len(tubeColor) >= 1:
+            
+                #the if statement will run if purple color is detected by the AI vision sensor    print("tube detected")
+                controller1.screen.print("tube detected")
+                clawHeight1.spin_for(FORWARD, 160, DEGREES)
+                clawHeight2.spin_for(FORWARD, 160, DEGREES)
+                drivetrain.drive_for(FORWARD, 6.25, INCHES)
+                wait(1, SECONDS)
+                clawHeight1.set_velocity(10, PERCENT)
+                clawHeight2.set_velocity(10, PERCENT)
+                clawHeight1.spin_for(REVERSE, 60, DEGREES)
+                clawHeight2.spin_for(REVERSE, 60, DEGREES)
+                wait(1, SECONDS)
+                clawControl.spin_for(REVERSE, 60, DEGREES)
+                drivetrain.drive_for(REVERSE, 3, INCHES)
+        elif(value > 600):
+            drivetrain.drive(FORWARD)
+            #if the distance sensor doesn't detect a wall in 600 mm then the robot will continue driving
+
+
+while (start == False):
+        brain.screen.clear_row(3)
+        brain.screen.set_cursor(3, 1)
+        value = distanceSensor.object_distance(MM)
+        print(value)
+        brain.screen.print(value)
+        wait(1, SECONDS)
+        # this is the distance sensor value on the front side of the robot
+        # this lets the robot use the distance sensor to check if the front is clear
+        if (value < 440): 
+            controller1.screen.print("Don't Drive Forward")
+            brain.screen.print("Don't Drive Forward")
+            wait(1, SECONDS)
+            controller1.screen.clear_screen()
+        # this lets the robot know that the front is not clear
+        elif(value > 440):
+            RobotFinished = False
+            start = True
+            controller1.screen.print("Drive Forward")
+            brain.screen.print("Drive Forward") 
+            wait(1, SECONDS)
+            controller1.screen.clear_screen()
+            drivetrain.drive_for(FORWARD, 6, INCHES)
 
 # This makes sure that the robot is allowed to start
 # the autonomous routine but has not finished yet
-while(RobotFinished == False and start == True):
+while(RobotFinished == False):
     # drivetrain drive forward for one y coordinate 
     brain.screen.clear_row(4)
     brain.screen.set_cursor(4, 1)
@@ -544,57 +623,40 @@ while(RobotFinished == False and start == True):
         forwardClear = True
         drivetrain.drive_for(FORWARD, 8, INCHES)
         coordinate_tracker()
-    break
-
-
-
-#Should work needs testing
-#function for dropping the vial in the
-def dropOff():
-    # we use the start_awb in order to cancel out the yellowness with whiteness in the ai vision sensor 
-    # this balances the color and prevents extra yellowing
-    aivisionsensor.start_awb()
-    # this entire while loop inside of the drop off function
-    # only starts when the variable is set true so it doesn't function
-    # until the variable is set true
-    while tubeChecker == True:
-        aivisionsensor.color_detection(True)
-        tubeColor = aivisionsensor.take_snapshot(purple)
-        value = distanceSensor.object_distance(MM)
-        print(value)
-        # this is the distance sensor value on the front side of the robot
-        # this lets the robot use the distance sensor to check if it is close enough
-        # to the tube
-        if (value < 600 and value > 590):
-            #the robot's distance sensor will detect the distance between it and the wall and will stop drivetrain.stop(BRAKE)
-            if len(tubeColor) >= 1:
-            
-                #the if statement will run if purple color is detected by the AI vision sensor    print("tube detected")
-                controller1.screen.print("tube detected")
-                clawHeight1.spin_for(FORWARD, 160, DEGREES)
-                clawHeight2.spin_for(FORWARD, 160, DEGREES)
-                drivetrain.drive_for(FORWARD, 6.25, INCHES)
-                wait(1, SECONDS)
-                clawHeight1.set_velocity(10, PERCENT)
-                clawHeight2.set_velocity(10, PERCENT)
-                clawHeight1.spin_for(REVERSE, 60, DEGREES)
-                clawHeight2.spin_for(REVERSE, 60, DEGREES)
-                wait(1, SECONDS)
-                clawControl.spin_for(REVERSE, 60, DEGREES)
-                drivetrain.drive_for(REVERSE, 3, INCHES)
-        elif(value > 600):
-            drivetrain.drive(FORWARD)
-            #if the distance sensor doesn't detect a wall in 600 mm then the robot will continue driving
-
-
-
-#this is code that will run if the vial is there and we need to drop it off in the dissemination chamber
-#clawControl.sp#in_for(FORWARD, 75, DEGREES)
-#clawHeight.spi#n_for(FORWARD, 240, DEGREES)
-#drivetrain.set#drivetrain.set_heading(0, DEGREES
-#dropOff()
 
 while manual == True:
+    if controller1.buttonY.pressing():
+            aivisionsensor.color_detection(True)
+            tubeColor = aivisionsensor.take_snapshot(purple)
+            value = distanceSensor.object_distance(MM)
+            controller1.rumble("..")
+            if len(tubeColor) >= 1:
+                print("tube detected color purple")
+    elif controller1.buttonA.pressing():
+        aivisionsensor.tag_detection(True)
+        snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
+        value = distanceSensor.object_distance(MM)
+        controller1.rumble("..")
+        drivetrain.set_drive_velocity(10, PERCENT)
+            #This is a for loop used to check every single april tag
+            #that was taken inside the picture for the vials
+        for obj in snapshot:                
+                #This will print to the screen the tag id of the tag that was detectedn
+            print("Tag detected: ", obj.id)
+            brain.screen.print("Tag detected")
+    elif controller1.buttonLeft.pressing():
+        clawHeight1.spin_for(FORWARD, 285, DEGREES)
+    elif controller1.buttonRight.pressing():
+        clawHeight1.spin_for(FORWARD, 450, DEGREES)
+
+'''
+#this is code that will run if the vial is there and we need to drop it off in the dissemination chamber
+clawControl.spin_for(FORWARD, 75, DEGREES)
+clawHeight1.spin_for(FORWARD, 240, DEGREES)
+dropOff()
+
+
+while True:
     # This is the manual code to raise the arm and control it
     # to correctly obtain the vial
     if controller1.buttonA.pressing():
@@ -609,7 +671,6 @@ while manual == True:
         # it takes into account all the tags that are there
         snapshot = aivisionsensor.take_snapshot(AiVision.ALL_TAGS)
         # For every april tag in the snapshot it will sort through their
-        
         for obj in snapshot:                
             #This will print to the screen the tag id of the tag that was detectedn
             controller1.screen.print("Tag detected: ", obj.id)
@@ -638,13 +699,4 @@ while manual == True:
             if obj.id == 5:
                 print("correct lever signal detected with tag:", obj.id)
                 controller1.screen.print("correct lever signal with tag:", obj.id)
-    elif controller1.buttonLeft.pressing():
-        clawHeight1.spin_for(FORWARD, 240, DEGREES)
-        clawHeight2.spin_for(FORWARD, 240, DEGREES)
-        print("claw height up")
-    elif controller1.buttonRight.pressing():
-        clawHeight1.spin_for(FORWARD, 400, DEGREES)
-        clawHeight2.spin_for(FORWARD, 400, DEGREES)
-        print("claw height vial")
-
-                    
+'''
