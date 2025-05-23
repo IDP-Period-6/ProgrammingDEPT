@@ -236,7 +236,6 @@ forwardClear = False
 leftClear = False
 rightClear = False
 RobotFinished = True
-manual = False
 leftOrRight = 1
 
 #robot position coordinates
