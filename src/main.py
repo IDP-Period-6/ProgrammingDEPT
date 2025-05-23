@@ -545,8 +545,8 @@ def dropOff():
                 clawControl.spin_for(REVERSE, 60, DEGREES)
                 drivetrain.drive_for(REVERSE, 3, INCHES)
         elif(value > 600):
-            break
-            #if the distance sensor doesn't detect a wall in 600 mm then the robot will continue drivingdrivetrain.drive(FORWARD)
+            drivetrain.drive(FORWARD)
+            #if the distance sensor doesn't detect a wall in 600 mm then the robot will continue driving
 
 
 
@@ -598,8 +598,5 @@ while manual == True:
         clawHeight1.spin_for(FORWARD, 400, DEGREES)
         clawHeight2.spin_for(FORWARD, 400, DEGREES)
         print("claw height vial")
-    elif controller1.buttonDown.pressing():
-        clawHeight1.spin_for(REVERSE, 240, DEGREES)
-        clawHeight2.spin_for(REVERSE, 240, DEGREES)
-        print("claw height down")
+
                     
